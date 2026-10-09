@@ -4,7 +4,7 @@
     <img src="docs/images/logo-light.svg" alt="Switch Magic" width="440">
   </picture>
   <p><strong>A little magic between windows.</strong></p>
-  <p>A visual Alt+Tab switcher for Omarchy.<br>Hold Alt. Find your window. Release to land.</p>
+  <p>A visual workspace and window switcher for Omarchy.<br>Browse a space or window, then release to switch.</p>
   <p>
     <img alt="Made for Omarchy" src="https://img.shields.io/badge/Omarchy-4-8586df?style=flat-square">
     <img alt="Wayland and Hyprland" src="https://img.shields.io/badge/Wayland-Hyprland-202431?style=flat-square">
@@ -21,7 +21,7 @@
 
 Switch Magic keeps your windows in sight while you hold **Alt**, including above fullscreen apps. Browse the previews, release Alt, and the selected window takes focus.
 
-- **Three scopes.** Switch within your workspace, your monitor, or every workspace.
+- **Four scopes.** Switch windows on the current workspace or monitor, browse every window, or open a workspace-first overview.
 - **Four built-in views.** List, Grid, Carousel, and Hand of cards.
 - **Your own style.** Duplicate a view and tune its geometry, typography, borders, shadows, and motion.
 - **Your choice of previews.** Live windows, snapshots, icons, or live capture for the selected card only.
@@ -51,29 +51,32 @@ omarchy-shell switch-magic settings
 <details>
 <summary><strong>How automatic shortcuts work</strong></summary>
 
-While enabled, Switch Magic registers its three shortcuts in Hyprland's running configuration. Disabling or removing the plugin reloads your saved Hyprland configuration, restoring Omarchy's defaults or your saved custom bindings. A watchdog also restores them if the shell stops unexpectedly (within about eight seconds).
+While enabled, Switch Magic registers its four shortcuts in Hyprland's running configuration. Disabling or removing the plugin reloads your saved Hyprland configuration, restoring Omarchy's defaults or your saved custom bindings. A watchdog also restores them if the shell stops unexpectedly (within about eight seconds).
 
 New installations never edit your Hyprland configuration files. Upgrading from the old installer automatically backs up and removes its exact marked include from `~/.config/hypr/bindings.lua`. Backups are stored in `~/.config/switch-magic/backups/`. A manually modified legacy block is left untouched and reported in preferences.
 
 </details>
 
-## One gesture, three scopes
+## One gesture, four scopes
 
 | Shortcut | Windows to browse | Default view | Default previews |
 | :--- | :--- | :--- | :--- |
-| **Alt + Tab** | Current workspace | Carousel | Live |
+| **Alt + Tab** | Workspaces on the focused monitor | Grid | Live selection |
 | **Shift + Alt + Tab** | Every workspace on the focused monitor | Hand of cards | Snapshot |
 | **Ctrl + Alt + Tab** | Every workspace on every monitor | Grid | Live selection |
+| **Ctrl + Super + Tab** | Current workspace windows | Carousel | Live |
 
 Choose a different view and preview mode for each shortcut independently.
 
+The workspace overview shows one card per workspace, with small previews of its windows. Use the arrow keys to choose a space, then release Alt or press Enter to switch to it. The overview lists workspaces reported by Hyprland on the focused monitor, including empty workspaces.
+
 | While the switcher is open | Action |
 | :--- | :--- |
-| Keep holding **Alt** | Keep the switcher visible |
-| Press **Tab** again | Browse the next window |
+| Keep holding the shortcut modifiers | Keep the switcher visible |
+| Press **Tab** again | Browse the next space or window |
 | **← / →** | Move backward or forward |
 | **↑ / ↓** | Move between grid rows |
-| Release **Alt**, press **Enter**, or click a card | Focus the selected window |
+| Release **Alt** / **Ctrl+Super**, press **Enter**, or click a card | Switch to the selected space or focus the selected window |
 | **Esc** | Cancel without switching |
 | **F2** | Open preferences |
 
@@ -123,6 +126,8 @@ Open **View studio**, choose a template, select **Duplicate view**, and give you
 | **Atmosphere & heading** | Theme or custom accent, backdrop dimming, logo sizing, and hints |
 
 Everything saves automatically. Built-in views remain read-only, so you always have a starting point. New installations include **only the four defaults**; your named views live in your own settings. The custom view shown here is a demonstration.
+
+In **Shortcuts**, toggle **Picker branding** to show or hide the Switch Magic logo and wordmark.
 
 Custom views can be renamed or deleted with confirmation. Deleting an assigned view returns its shortcuts to the corresponding built-in template.
 

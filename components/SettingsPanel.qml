@@ -139,7 +139,7 @@ Rectangle {
             Flow {
                 width: parent.width; spacing: 8
                 Repeater {
-                    model: [{id: "workspace", title: "Workspace · Alt Tab"}, {id: "monitor", title: "Monitor · Shift Alt Tab"}, {id: "all", title: "Everywhere · Ctrl Alt Tab"}]
+                    model: [{id: "workspace", title: "Workspace · Ctrl Super Tab"}, {id: "monitor", title: "Monitor · Shift Alt Tab"}, {id: "all", title: "Everywhere · Ctrl Alt Tab"}, {id: "spaces", title: "Spaces · Alt Tab"}]
                     MagicButton { required property var modelData; text: modelData.title; chosen: root.selectedScope === modelData.id; accent: root.themeColors.accent; foreground: root.themeColors.text; fontFamily: root.fontFamily; onClicked: root.selectedScope = modelData.id }
                 }
             }
@@ -147,6 +147,16 @@ Rectangle {
                 width: parent.width; spacing: 14
                 Text { text: "CHOOSE A VIEW"; color: root.themeColors.muted; font.family: root.fontFamily; font.pixelSize: 10; font.letterSpacing: 2 }
                 ViewCarousel { screenWidth: root.screenWidth; screenHeight: root.screenHeight; width: parent.width; config: root.draft; selectedId: root.profile.view; themeColors: root.themeColors; fontFamily: root.fontFamily; onPicked: function(id) { root.selectView(id); } }
+            }
+            Column {
+                width: parent.width; spacing: 8
+                Text { text: "PICKER BRANDING"; color: root.themeColors.muted; font.family: root.fontFamily; font.pixelSize: 10; font.letterSpacing: 2 }
+                MagicButton {
+                    text: root.draft.behavior.showLogo ? "Logo and wordmark shown" : "Logo and wordmark hidden"
+                    chosen: root.draft.behavior.showLogo
+                    accent: root.themeColors.accent; foreground: root.themeColors.text; fontFamily: root.fontFamily
+                    onClicked: { var next = Model.clone(root.draft); next.behavior.showLogo = !next.behavior.showLogo; root.setDraft(next); }
+                }
             }
             Column {
                 width: parent.width; spacing: 12

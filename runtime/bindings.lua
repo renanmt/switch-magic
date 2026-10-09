@@ -12,7 +12,7 @@ if prior then prior:stop(false) end
 local state = { owner = owner, remaining = 8, binds = {}, active = true }
 _G[slot] = state
 function state:valid()
-    if not self.active or #self.binds ~= 3 then return false end
+    if not self.active or #self.binds ~= 4 then return false end
     for _, bind in ipairs(self.binds) do
         if bind:is_enabled() ~= true then return false end
     end
@@ -32,10 +32,14 @@ local function emit(name)
     if state.active then hl.dispatch(hl.dsp.global('switch-magic:' .. name)) end
 end
 local ok, err = pcall(function()
+    -- Omarchy spells its Former workspace chord in this order. Lua unbind
+    -- matches the chord spelling, so remove it as well as our own spelling.
+    hl.unbind('SUPER + CTRL + TAB')
     for _, chord in ipairs({
-        {'ALT + TAB', 'workspace', 'Switch Magic: current workspace'},
+        {'ALT + TAB', 'spaces', 'Switch Magic: workspace overview'},
         {'ALT + SHIFT + TAB', 'monitor', 'Switch Magic: current monitor'},
         {'CTRL + ALT + TAB', 'all', 'Switch Magic: all workspaces'},
+        {'CTRL + SUPER + TAB', 'workspace-chord', 'Switch Magic: current workspace'},
     }) do
         hl.unbind(chord[1])
         state.binds[#state.binds + 1] = hl.bind(chord[1], hl.dsp.global('switch-magic:' .. chord[2]), {description = chord[3], repeating = true})

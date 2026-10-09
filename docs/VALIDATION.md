@@ -1,5 +1,17 @@
 # Validation
 
+## Workspace overview review fixes
+
+- Offscreen QML checks use synthetic desktop entries to verify app icons,
+  fallback initials, positive preview sizes in all four built-in layouts, and
+  hover selection only when enabled. They run in `python scripts/check.py`.
+- Lua lifecycle tests cover removing Omarchy's `SUPER + CTRL + TAB` binding
+  alongside the plugin's `CTRL + SUPER + TAB` spelling. Before the fix both
+  actions fired, changing workspace/monitor before the picker opened.
+- Physical Ctrl+Super+Tab input was checked on three monitors: the picker
+  opens on the focused output, closes on modifier release, and only one action
+  owns that key chord.
+
 ## Version 0.3.2
 
 All checks pass, including 6 installer and 6 migration tests. New regression

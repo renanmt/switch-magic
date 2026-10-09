@@ -18,6 +18,7 @@ Item {
     property bool opened: false
     property bool editing: false
     property bool demo: false
+    property bool commitOnModifierRelease: false
     property string scope: "workspace"
     property var rows: []
     property int selected: 0
@@ -48,7 +49,7 @@ Item {
     property real reveal: 1
     onOpenedChanged: if (opened && !editing) entrance.restart()
     NumberAnimation { id: entrance; target: root; property: "reveal"; from: 0; to: 1; duration: root.animation.enabled ? root.animation.entryDuration || 0 : 0; easing.type: root.easing }
-    readonly property string scopeLabel: scope === "workspace" ? "Current workspace" : scope === "monitor" ? "This monitor" : "All workspaces"
+    readonly property string scopeLabel: scope === "workspace" ? "Current workspace" : scope === "monitor" ? "This monitor" : scope === "spaces" ? "Spaces on this monitor" : "All workspaces"
     readonly property string fontFamily: Style.font.menuFamily
     readonly property var geometry: ready ? Model.metrics(layoutName, layout, rows.length, Math.max(280, panel.width - 100), Math.max(180, panel.height - 300)) : ({width: 1, height: 1, scale: 1, columns: 1, capacity: 1})
 
@@ -106,6 +107,15 @@ Item {
             };
         });
     }
+    function allWorkspaces() {
+        var windows = allWindows();
+        return Hyprland.workspaces.values.map(function(workspace) {
+            var members = windows.filter(function(window) { return window.workspaceId === workspace.id && window.mapped && !window.hidden && !window.special; });
+            var monitorId = workspace.monitor ? workspace.monitor.id : -1;
+            var name = String(workspace.name || workspace.id);
+            return { id: workspace.id, name: name, monitorId: monitorId, active: !!workspace.active, special: name === "special" || name.indexOf("special:") === 0, target: workspace, windows: members };
+        });
+    }
     function captureFor(address) {
         // Reading values establishes a reactive dependency when a window closes.
         var items = Hyprland.toplevels.values;
@@ -116,7 +126,7 @@ Item {
         var monitor = Hyprland.focusedMonitor;
         return Quickshell.screens.find(function(s) { return monitor && s.name === monitor.name; }) || Quickshell.screens[0];
     }
-    function begin(nextScope) {
+    function begin(nextScope, modifierRelease) {
         if (!ready || editing) return;
         if (opened && scope === nextScope) { step(1); return; }
         if (!opened) {
@@ -125,9 +135,14 @@ Item {
             context = { monitorId: monitor ? monitor.id : -1, workspaceId: workspace ? workspace.id : -1 };
             displayScreen = screenForFocus();
         }
-        demo = false; overrideLayout = ""; scope = nextScope;
-        rows = Model.selectWindows(allWindows(), scope, context, config.behavior.includeSpecial);
-        selected = Model.initialIndex(rows, Hyprland.activeToplevel ? Hyprland.activeToplevel.address : "");
+        demo = false; overrideLayout = ""; scope = nextScope; commitOnModifierRelease = !!modifierRelease;
+        if (scope === "spaces") {
+            rows = Model.selectWorkspaces(allWorkspaces(), context.monitorId);
+            selected = Math.max(0, rows.findIndex(function(workspace) { return workspace.active; }));
+        } else {
+            rows = Model.selectWindows(allWindows(), scope, context, config.behavior.includeSpecial);
+            selected = Model.initialIndex(rows, Hyprland.activeToplevel ? Hyprland.activeToplevel.address : "");
+        }
         opened = true;
         Qt.callLater(function() { keyCatcher.forceActiveFocus(); });
     }
@@ -135,9 +150,15 @@ Item {
         if (!opened || editing || !rows.length) return;
         selected = Model.wrap(selected + delta, rows.length);
     }
-    function close() { if (editing && preferencesLoader.item && !preferencesLoader.item.prepareClose()) return; opened = false; editing = false; demo = false; rows = []; overrideLayout = ""; }
+    function close() { if (editing && preferencesLoader.item && !preferencesLoader.item.prepareClose()) return; opened = false; editing = false; demo = false; commitOnModifierRelease = false; rows = []; overrideLayout = ""; }
     function commit() {
         if (!opened || editing || demo) return;
+        if (scope === "spaces") {
+            var selectedSpace = rows[selected];
+            close();
+            if (selectedSpace && Number.isInteger(selectedSpace.id)) selectedSpace.target.activate();
+            return;
+        }
         var address = rows[selected] ? rows[selected].address : "";
         // Only use validated compositor addresses in a dispatcher expression.
         var exists = Hyprland.toplevels.values.some(function(w) { return w.address === address; });
@@ -160,6 +181,13 @@ Item {
     }
     function reconcile() {
         if (!opened || editing || demo) return;
+        if (scope === "spaces") {
+            var selectedId = rows[selected] ? rows[selected].id : -1;
+            rows = Model.selectWorkspaces(allWorkspaces(), context.monitorId);
+            var nextIndex = rows.findIndex(function(workspace) { return workspace.id === selectedId; });
+            selected = nextIndex >= 0 ? nextIndex : Math.max(0, Math.min(selected, rows.length - 1));
+            return;
+        }
         var result = Model.remaining(rows, Hyprland.toplevels.values.map(function(w) { return w.address; }), selected);
         rows = result.windows; selected = result.index;
     }
@@ -174,6 +202,10 @@ Item {
     }
     Connections {
         target: Hyprland.toplevels
+        function onValuesChanged() { root.reconcile(); }
+    }
+    Connections {
+        target: Hyprland.workspaces
         function onValuesChanged() { root.reconcile(); }
     }
     Connections {
@@ -193,23 +225,24 @@ Item {
         active: root.registerShortcuts
         sourceComponent: Component {
             Item {
-    GlobalShortcut { appid: "switch-magic"; name: "workspace"; description: "Switch Magic: current workspace"; onPressed: root.begin("workspace") }
     GlobalShortcut { appid: "switch-magic"; name: "monitor"; description: "Switch Magic: current monitor"; onPressed: root.begin("monitor") }
     GlobalShortcut { appid: "switch-magic"; name: "all"; description: "Switch Magic: all workspaces"; onPressed: root.begin("all") }
+    GlobalShortcut { appid: "switch-magic"; name: "spaces"; description: "Switch Magic: workspace overview"; onPressed: root.begin("spaces") }
+    GlobalShortcut { appid: "switch-magic"; name: "workspace-chord"; description: "Switch Magic: current workspace"; onPressed: root.begin("workspace", true) }
     GlobalShortcut { appid: "switch-magic"; name: "commit"; description: "Switch Magic: release Alt"; onPressed: root.commit() }
             }
         }
     }
     IpcHandler {
         target: "switch-magic"
-        function show(scope: string): string { if (["workspace", "monitor", "all"].indexOf(scope) < 0) return "unknown scope"; root.begin(scope); return "ok"; }
+        function show(scope: string): string { if (["workspace", "monitor", "all", "spaces"].indexOf(scope) < 0) return "unknown scope"; root.begin(scope); return "ok"; }
         function next(): string { root.step(1); return "ok"; }
         function previous(): string { root.step(-1); return "ok"; }
         function accept(): string { root.commit(); return "ok"; }
         function cancel(): string { root.close(); return "ok"; }
         function settings(): string { root.settings(); return "ok"; }
         function preview(layout: string): string { return root.preview(layout); }
-        function state(): string { return JSON.stringify({ opened: root.opened, editing: root.editing, scope: root.scope, layout: root.layoutName, view: root.viewId, preview: root.captureMode, count: root.rows.length, selected: root.selected, addresses: root.rows.map(function(w) { return w.address; }), error: root.bindingError || root.configError }); }
+        function state(): string { return JSON.stringify({ opened: root.opened, editing: root.editing, scope: root.scope, layout: root.layoutName, view: root.viewId, preview: root.captureMode, count: root.rows.length, selected: root.selected, addresses: root.scope === "spaces" ? [] : root.rows.map(function(w) { return w.address; }), workspaces: root.scope === "spaces" ? root.rows.map(function(w) { return w.name; }) : [], error: root.bindingError || root.configError }); }
         function configuration(): string { return JSON.stringify(Model.persisted(root.config)); }
         function configure(json: string): string {
             try { var next = Model.merge(root.config, JSON.parse(json)); return root.saveSettings(next) ? "ok" : root.configError; }
@@ -243,13 +276,14 @@ Item {
                 else if (!root.editing && event.key === Qt.Key_Tab) {
                     // Hyprland owns all Alt+Tab chords. Handling the same
                     // key here can advance twice as the layer gains focus.
-                    if (!(event.modifiers & Qt.AltModifier)) root.step(1);
+                    if (!(event.modifiers & (Qt.AltModifier | Qt.ControlModifier | Qt.MetaModifier))) root.step(1);
                 }
                 event.accepted = !root.editing || event.key === Qt.Key_Escape;
             }
             Keys.onReleased: function(event) {
                 // Alt release is owned by bindings.lua, including dual-Alt.
                 // Consuming here prevents keys leaking into the underlying app.
+                if (root.commitOnModifierRelease && (event.key === Qt.Key_Control || event.key === Qt.Key_Meta)) root.commit();
                 event.accepted = true;
             }
             Item {
@@ -264,6 +298,7 @@ Item {
                     id: headingColumn
                     anchors.horizontalCenter: parent.horizontalCenter; spacing: 12
                     Brand {
+                        visible: !root.config.behavior || root.config.behavior.showLogo
                         anchors.horizontalCenter: parent.horizontalCenter
                         themeColors: root.themeColors; fontFamily: root.fontFamily
                         textSize: root.activeView ? root.activeView.scene.headerSize : 18
@@ -274,7 +309,7 @@ Item {
                         anchors.horizontalCenter: parent.horizontalCenter; spacing: 12
                         Text { text: root.scopeLabel; color: root.themeColors.muted; font.family: root.fontFamily; font.pixelSize: 12 }
                         Text { text: "·"; color: root.themeColors.accent; font.pixelSize: 12 }
-                        Text { text: root.rows.length + (root.rows.length === 1 ? " window" : " windows"); color: root.themeColors.muted; font.family: root.fontFamily; font.pixelSize: 12 }
+                        Text { text: root.rows.length + (root.rows.length === 1 ? (root.scope === "spaces" ? " space" : " window") : (root.scope === "spaces" ? " spaces" : " windows")); color: root.themeColors.muted; font.family: root.fontFamily; font.pixelSize: 12 }
                     }
                 }
                 Item {
@@ -283,7 +318,7 @@ Item {
                     width: root.geometry.width; height: root.geometry.height
                     scale: root.geometry.scale; transformOrigin: Item.Top
                     Repeater {
-                        model: root.rows
+                        model: root.scope === "spaces" ? [] : root.rows
                         WindowCard {
                             id: card
                             required property var modelData
@@ -291,17 +326,17 @@ Item {
                             readonly property var place: Model.placement(root.layoutName, root.layout, index, root.selected, root.rows.length, root.geometry)
                             x: place.x; y: place.y; width: place.width; height: place.height
                             rotation: place.rotation; scale: place.scale; z: place.z; opacity: place.opacity
-                            visible: opacity > 0.01
                             enabled: place.visible
                             transformOrigin: Item.Bottom
                             windowInfo: modelData
+                            visible: root.scope !== "spaces" && opacity > 0.01
                             themeColors: root.themeColors
                             captureTarget: root.captureFor(modelData.address)
                             selected: index === root.selected
                             compact: root.layoutName === "list"
                             capturing: root.opened && !root.editing && place.visible
                             hoverSelect: root.config.behavior.hoverSelect
-                                                        previewMode: root.captureMode
+                            previewMode: root.captureMode
                             style: root.activeView.card
                             duration: root.motion
                             fontFamily: root.fontFamily
@@ -314,7 +349,37 @@ Item {
                             Behavior on opacity { NumberAnimation { duration: root.animation.opacity ? root.motion : 0 } }
                         }
                     }
-                    Text { anchors.centerIn: parent; visible: !root.rows.length; text: "No windows in this scope"; color: root.themeColors.muted; font.family: root.fontFamily; font.pixelSize: 20 }
+                    Repeater {
+                        model: root.scope === "spaces" ? root.rows : []
+                        SpaceCard {
+                            required property var modelData
+                            required property int index
+                            readonly property var place: Model.placement(root.layoutName, root.layout, index, root.selected, root.rows.length, root.geometry)
+                            x: place.x; y: place.y; width: place.width; height: place.height
+                            rotation: place.rotation; scale: place.scale; z: place.z; opacity: place.opacity
+                            visible: opacity > 0.01
+                            enabled: place.visible
+                            transformOrigin: Item.Bottom
+                            compact: root.layoutName === "list"
+                            hoverSelect: root.config.behavior.hoverSelect
+                            workspace: modelData
+                            themeColors: root.themeColors
+                            style: root.activeView.card
+                            previewMode: root.captureMode
+                            captureFor: function(address) { return root.captureFor(address); }
+                            selected: index === root.selected
+                            duration: root.motion
+                            fontFamily: root.fontFamily
+                            onPicked: { root.selected = index; root.commit(); }
+                            onHovered: root.selected = index
+                            Behavior on x { NumberAnimation { duration: root.animation.position ? root.motion : 0; easing.type: root.easing } }
+                            Behavior on y { NumberAnimation { duration: root.animation.position ? root.motion : 0; easing.type: root.easing } }
+                            Behavior on rotation { NumberAnimation { duration: root.animation.rotation ? root.motion : 0; easing.type: root.easing } }
+                            Behavior on scale { NumberAnimation { duration: root.animation.scale ? root.motion : 0; easing.type: root.easing } }
+                            Behavior on opacity { NumberAnimation { duration: root.animation.opacity ? root.motion : 0 } }
+                        }
+                    }
+                    Text { anchors.centerIn: parent; visible: !root.rows.length; text: root.scope === "spaces" ? "No workspaces on this monitor" : "No windows in this scope"; color: root.themeColors.muted; font.family: root.fontFamily; font.pixelSize: 20 }
                 }
                 Column {
                     anchors.horizontalCenter: parent.horizontalCenter

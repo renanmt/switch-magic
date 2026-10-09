@@ -11,10 +11,11 @@ plugin entry** in `~/.config/omarchy/shell.json`:
   "profiles": {
     "workspace": { "view": "fan", "preview": "view" },
     "monitor": { "view": "list", "preview": "snapshot" },
-    "all": { "view": "grid", "preview": "icon" }
+    "all": { "view": "grid", "preview": "icon" },
+    "spaces": { "view": "grid", "preview": "hybrid" }
   },
   "customViews": [],
-  "behavior": { "hoverSelect": false, "includeSpecial": false }
+  "behavior": { "hoverSelect": false, "includeSpecial": false, "showLogo": true }
 }
 ```
 
@@ -47,7 +48,8 @@ retaining its tile sizes and styling. Grid capacity comes from rows × columns;
 Existing custom grids without `geometry.rows` derive it from their old
 `maxVisible` and column count on load.
 Set `animation.enabled` to `false` for reduced motion. Fonts and accents set to
-`theme` follow Omarchy automatically.
+`theme` follow Omarchy automatically. `behavior.showLogo` controls the picker
+wordmark and logo; it does not affect the preferences window.
 
 Settings reload live. Invalid values or attempts to change the built-in views
 retain the last valid configuration and expose a diagnostic in `state` and
@@ -64,7 +66,9 @@ omarchy-shell switch-magic configuration
 ```
 
 The active special workspace remains reachable in workspace scope, and pinned
-windows are included on their monitor. Previews preserve aspect ratio.
+windows are included on their monitor. The `spaces` profile opens the workspace
+overview on the focused monitor; selecting a card activates that workspace.
+Previews preserve aspect ratio.
 List/grid paginate to keep the window list manageable.
 
 

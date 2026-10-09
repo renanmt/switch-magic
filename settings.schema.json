@@ -20,6 +20,9 @@
         },
         "hoverSelect": {
           "type": "boolean"
+        },
+        "showLogo": {
+          "type": "boolean"
         }
       }
     },
@@ -66,6 +69,25 @@
           }
         },
         "all": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "view": {
+              "type": "string",
+              "description": "Built-in id or a custom view id"
+            },
+            "preview": {
+              "enum": [
+                "view",
+                "live",
+                "snapshot",
+                "hybrid",
+                "icon"
+              ]
+            }
+          }
+        },
+        "spaces": {
           "type": "object",
           "additionalProperties": false,
           "properties": {

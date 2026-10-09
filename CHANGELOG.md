@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+- Fix workspace icon fallbacks, compact List previews, and disabled hover selection.
+- Remove the conflicting Omarchy shortcut so Ctrl+Super+Tab opens on the focused monitor.
+
+- Add a workspace-first overview with per-workspace window previews and a dedicated shortcut.
+- Honor the Icons only preview mode in workspace cards by showing app icons instead of captured windows.
+- Make Alt+Tab open the workspace overview and Ctrl+Super+Tab switch windows on the current workspace.
+- Add a preference to show or hide the picker logo and wordmark.
+
 ## 0.3.2
 
 - Automatically restrict existing backup directories to 0700 and files to 0600 before any migration early return or installer preflight.

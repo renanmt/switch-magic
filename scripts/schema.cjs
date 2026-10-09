@@ -29,8 +29,8 @@ requireAll(view);
 const profile=object({view:{type:'string',description:'Built-in id or a custom view id'},preview:{enum:['view','live','snapshot','hybrid','icon']}});
 const schema=object({
     '$schema':{type:'string'},id:{const:'renanmt.switch-magic'},version:{const:2},
-    behavior:object({includeSpecial:{type:'boolean'},hoverSelect:{type:'boolean'}}),
-    profiles:object({workspace:profile,monitor:profile,all:profile}),
+    behavior:object({includeSpecial:{type:'boolean'},hoverSelect:{type:'boolean'},showLogo:{type:'boolean'}}),
+    profiles:object({workspace:profile,monitor:profile,all:profile,spaces:profile}),
     customViews:{type:'array',maxItems:64,items:view},
     views:{type:'null',description:'Built-in templates are read-only and loaded from defaults.json.'},
     layouts:{type:'null',description:'Obsolete v1 field.'},appearance:{type:'null',description:'Obsolete v1 field; appearance belongs to each view.'}
