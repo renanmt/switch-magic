@@ -3,24 +3,29 @@
   "behavior": {
     "includeSpecial": false,
     "hoverSelect": false,
-    "showLogo": true
+    "showLogo": true,
+    "backgroundBlur": 20
   },
   "profiles": {
     "workspace": {
       "view": "carousel",
-      "preview": "live"
+      "preview": "live",
+      "shortcut": "ALT + TAB"
     },
     "monitor": {
       "view": "fan",
-      "preview": "snapshot"
+      "preview": "snapshot",
+      "shortcut": "ALT + SHIFT + TAB"
     },
     "all": {
       "view": "grid",
-      "preview": "hybrid"
+      "preview": "hybrid",
+      "shortcut": "CTRL + ALT + TAB"
     },
     "spaces": {
       "view": "grid",
-      "preview": "hybrid"
+      "preview": "hybrid",
+      "shortcut": "ALT + SUPER + TAB"
     }
   },
   "views": [

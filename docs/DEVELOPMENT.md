@@ -34,7 +34,9 @@ hyprctl configerrors
 ```
 
 Developer previews can show private window content. Keep captures of personal desktop content out of commits. The README
-screenshots use fictional windows in an isolated rendering session. [VALIDATION.md](VALIDATION.md) records the checks performed for this build.
+screenshots use fictional windows in an isolated rendering session. Regenerate them with
+`python scripts/screenshots.py` in a Wayland session; a temporary overlay renders
+fictional fixtures without registering shortcuts or capturing desktop content. [VALIDATION.md](VALIDATION.md) records the checks performed for this build.
 
 
 [← Back to Switch Magic](../README.md)
@@ -43,7 +45,10 @@ screenshots use fictional windows in an isolated rendering session. [VALIDATION.
 
 `components/AutomaticBindings.qml` attaches runtime Lua bindings and renews an
 8-second lease every 2 seconds. Ownership tokens prevent an old component from
-removing a replacement instance's shortcuts. A config reload triggers reattachment.
+removing a replacement instance's shortcuts. A config reload triggers reattachment. Changing shortcut assignments reloads the
+saved configuration before installing the new bindings so removed chords regain
+their original actions. Offscreen QML checks exercise the settings controls with
+synthetic data, including conflict and reset confirmations.
 Disable/unload or lease expiry reloads the saved Hyprland configuration, preserving
 saved Lua callbacks without reconstructing them from `hyprctl binds` output.
 Other temporary runtime-only Hyprland changes are also reset by that reload.

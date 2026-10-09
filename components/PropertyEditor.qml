@@ -8,13 +8,14 @@ Item {
     required property var value
     required property var themeColors
     property string fontFamily: "sans-serif"
+    property real labelFraction: 0.42
     signal edited(var next)
     implicitHeight: field.type === "text" || field.type === "color" ? 68 : 54
     opacity: enabled ? 1 : 0.45
     function format(value) { return typeof value === "number" ? String(Math.round(value * 100) / 100) : String(value); }
-    Text { id: label; x: 0; y: root.field.type === "text" || root.field.type === "color" ? 0 : 9; width: parent.width * 0.42; text: root.field.label; color: root.themeColors.text; font.family: root.fontFamily; font.pixelSize: 12; wrapMode: Text.Wrap }
+    Text { id: label; visible: root.labelFraction > 0; x: 0; y: root.field.type === "text" || root.field.type === "color" ? 0 : 9; width: parent.width * root.labelFraction; text: root.field.label; color: root.themeColors.text; font.family: root.fontFamily; font.pixelSize: 12; wrapMode: Text.Wrap }
     Loader {
-        x: root.field.type === "text" || root.field.type === "color" ? 0 : parent.width * 0.44
+        x: root.field.type === "text" || root.field.type === "color" ? 0 : (root.labelFraction > 0 ? parent.width * (root.labelFraction + 0.02) : 0)
         y: root.field.type === "text" || root.field.type === "color" ? 24 : 0
         width: parent.width - x; height: 34
         sourceComponent: root.field.type === "boolean" ? booleanControl : root.field.type === "enum" ? choiceControl : root.field.type === "text" || root.field.type === "color" ? textControl : numberControl
@@ -27,9 +28,14 @@ Item {
         id: choiceControl
         ComboBox {
             id: choice
+            objectName: "propertyChoice"
             model: root.field.options
             currentIndex: root.field.options.indexOf(root.value)
-            onActivated: root.edited(root.field.options[currentIndex])
+            onActivated: {
+                root.edited(root.field.options[currentIndex]);
+                // Keep the displayed choice in sync if an edit is cancelled or rejected.
+                currentIndex = Qt.binding(function() { return root.field.options.indexOf(root.value); });
+            }
             font.family: root.fontFamily; font.pixelSize: 12
             contentItem: Text { leftPadding: 12; rightPadding: 26; text: choice.displayText; color: root.themeColors.text; verticalAlignment: Text.AlignVCenter; font: choice.font; elide: Text.ElideRight }
             background: Rectangle { color: Qt.alpha(root.themeColors.text, .04); radius: 8; border.width: 1; border.color: choice.activeFocus ? root.themeColors.accent : Qt.alpha(root.themeColors.text, .12) }

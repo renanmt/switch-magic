@@ -23,6 +23,12 @@
         },
         "showLogo": {
           "type": "boolean"
+        },
+        "backgroundBlur": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Background blur percentage; 0 disables blur."
         }
       }
     },
@@ -34,6 +40,10 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
+            "shortcut": {
+              "type": "string",
+              "description": "Modifier chord such as ALT + TAB; empty disables this scope shortcut."
+            },
             "view": {
               "type": "string",
               "description": "Built-in id or a custom view id"
@@ -53,6 +63,10 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
+            "shortcut": {
+              "type": "string",
+              "description": "Modifier chord such as ALT + TAB; empty disables this scope shortcut."
+            },
             "view": {
               "type": "string",
               "description": "Built-in id or a custom view id"
@@ -72,6 +86,10 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
+            "shortcut": {
+              "type": "string",
+              "description": "Modifier chord such as ALT + TAB; empty disables this scope shortcut."
+            },
             "view": {
               "type": "string",
               "description": "Built-in id or a custom view id"
@@ -91,6 +109,10 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
+            "shortcut": {
+              "type": "string",
+              "description": "Modifier chord such as ALT + TAB; empty disables this scope shortcut."
+            },
             "view": {
               "type": "string",
               "description": "Built-in id or a custom view id"

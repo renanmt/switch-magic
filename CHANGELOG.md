@@ -1,14 +1,17 @@
 # Changelog
 
-## Unreleased
+## 0.4.0 — 2026-10-09
 
-- Fix workspace icon fallbacks, compact List previews, and disabled hover selection.
-- Remove the conflicting Omarchy shortcut so Ctrl+Super+Tab opens on the focused monitor.
-
-- Add a workspace-first overview with per-workspace window previews and a dedicated shortcut.
-- Honor the Icons only preview mode in workspace cards by showing app icons instead of captured windows.
-- Make Alt+Tab open the workspace overview and Ctrl+Super+Tab switch windows on the current workspace.
-- Add a preference to show or hide the picker logo and wordmark.
+- Fix arrow navigation while shortcut modifiers are held by isolating picker input from desktop bindings; add WASD navigation.
+- Add a background blur percentage slider beside Display logo, defaulting to 20%.
+- Add a workspace overview with per-workspace previews and a dedicated Alt+Super+Tab shortcut; Alt+Tab continues switching current-workspace windows.
+- Add shortcut dropdowns, custom chords, and confirmation before moving a shortcut from another scope.
+- Restore saved desktop bindings when shortcuts are reassigned or disabled, and handle modifier release for custom chords.
+- Add a single Display logo toggle and a reset action that keeps custom views.
+- Keep duplication controls fixed in the left studio column, with independently scrolling controls and preview.
+- Place each scope’s shortcut selector at the right of the Views selection row.
+- Fix workspace icon fallbacks, compact List previews, disabled hover selection and conflicting desktop shortcut spellings.
+- Refresh the README instructions and seven screenshots, with a reproducible rendering script.
 
 ## 0.3.2
 

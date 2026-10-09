@@ -7,14 +7,26 @@ import Quickshell.Hyprland
 Item {
     id: root
     property string error: ""
+    required property string bindingCode
+    property string appliedCode: ""
+    property string installingCode: ""
+    onBindingCodeChanged: refresh()
     readonly property string owner: "sm-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2)
     property string program: ""
     property bool migrated: false
     property bool shuttingDown: false
     readonly property string detachCode: "local s=_G.__switch_magic_runtime_v1; if s and s.owner==" + JSON.stringify(owner) + " then s:stop(true) end"
     function refresh() {
-        if (!migrated || !program || install.running || shuttingDown) return;
-        install.command = ["hyprctl", "eval", "assert(load(" + JSON.stringify(program) + "))(" + JSON.stringify(owner) + ")"];
+        if (!migrated || !program || !bindingCode || install.running || reload.running || shuttingDown) return;
+        // Restore saved actions for shortcuts that were removed before taking
+        // ownership of the new set. A config reload also clears Lua callbacks.
+        if (appliedCode && appliedCode !== bindingCode) {
+            appliedCode = "";
+            reload.running = true;
+            return;
+        }
+        installingCode = bindingCode;
+        install.command = ["hyprctl", "eval", "assert(load(" + JSON.stringify(program) + "))(" + JSON.stringify(owner) + "," + installingCode + ")"];
         install.running = true;
     }
     FileView {
@@ -47,6 +59,8 @@ Item {
         stderr: StdioCollector { id: stderrOutput }
         onExited: function(code, status) {
             root.error = code === 0 && output.text.trim() === "ok" ? "" : (stderrOutput.text.trim() || output.text.trim() || "Could not register Switch Magic shortcuts.");
+            if (!root.error) root.appliedCode = root.installingCode;
+            if (root.bindingCode !== root.installingCode) Qt.callLater(root.refresh);
         }
     }
     Timer { id: afterReload; interval: 150; onTriggered: root.refresh() }

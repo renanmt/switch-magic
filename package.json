@@ -1,8 +1,8 @@
 {
   "name": "switch-magic",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "private": true,
-  "description": "An Omarchy window switcher with declarative layouts and live previews",
+  "description": "A visual workspace and window switcher with customizable shortcuts, layouts, and live previews.",
   "scripts": {
     "test": "node tests/model.test.cjs && lua tests/bindings.test.lua",
     "check": "python scripts/check.py"

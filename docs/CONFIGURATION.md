@@ -9,13 +9,13 @@ plugin entry** in `~/.config/omarchy/shell.json`:
   "id": "renanmt.switch-magic",
   "version": 2,
   "profiles": {
-    "workspace": { "view": "fan", "preview": "view" },
-    "monitor": { "view": "list", "preview": "snapshot" },
-    "all": { "view": "grid", "preview": "icon" },
-    "spaces": { "view": "grid", "preview": "hybrid" }
+    "workspace": { "view": "fan", "preview": "view", "shortcut": "ALT + TAB" },
+    "monitor": { "view": "list", "preview": "snapshot", "shortcut": "ALT + SHIFT + TAB" },
+    "all": { "view": "grid", "preview": "icon", "shortcut": "CTRL + ALT + TAB" },
+    "spaces": { "view": "grid", "preview": "hybrid", "shortcut": "ALT + SUPER + TAB" }
   },
   "customViews": [],
-  "behavior": { "hoverSelect": false, "includeSpecial": false, "showLogo": true }
+  "behavior": { "hoverSelect": false, "includeSpecial": false, "showLogo": true, "backgroundBlur": 20 }
 }
 ```
 
@@ -24,6 +24,17 @@ Do **not** replace your entire shell.json with this object. Update the existing
 copy of a view from `defaults.json` with a unique `id` and `name`, stored in
 `customViews`. Profiles reference that stable ID. The View studio creates these
 objects for you; renaming a view keeps its assignments intact.
+
+Each profile's `shortcut` is a modifier chord or an empty string for no shortcut.
+Missing shortcuts in older settings inherit the new defaults. Modifier order,
+case, `Win`/`Meta` and `Control` aliases are normalized, and duplicate assignments
+are rejected. Chords require at least one of Alt, Ctrl, Super or Shift and a
+letter, number, function key or named key such as Tab, Return or Left. Escape
+remains reserved for cancelling the picker. Settings changes restore the saved
+Hyprland bindings before attaching the new assignments.
+
+The UI asks before moving an occupied shortcut to another scope. Its reset
+button restores defaults while retaining the complete `customViews` library.
 
 | View section | Properties |
 | --- | --- |
@@ -50,6 +61,10 @@ Existing custom grids without `geometry.rows` derive it from their old
 Set `animation.enabled` to `false` for reduced motion. Fonts and accents set to
 `theme` follow Omarchy automatically. `behavior.showLogo` controls the picker
 wordmark and logo; it does not affect the preferences window.
+`behavior.backgroundBlur` is an integer percentage from 0 to 100 (default 20).
+The picker blurs an in-memory desktop snapshot without changing compositor-wide
+blur settings. The snapshot is released on close; failed capture falls back to
+the usual dimmed background.
 
 Settings reload live. Invalid values or attempts to change the built-in views
 retain the last valid configuration and expose a diagnostic in `state` and

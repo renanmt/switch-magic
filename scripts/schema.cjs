@@ -26,10 +26,10 @@ function requireAll(node) {
     Object.values(node.properties).forEach(requireAll);
 }
 requireAll(view);
-const profile=object({view:{type:'string',description:'Built-in id or a custom view id'},preview:{enum:['view','live','snapshot','hybrid','icon']}});
+const profile=object({shortcut:{type:'string',description:'Modifier chord such as ALT + TAB; empty disables this scope shortcut.'},view:{type:'string',description:'Built-in id or a custom view id'},preview:{enum:['view','live','snapshot','hybrid','icon']}});
 const schema=object({
     '$schema':{type:'string'},id:{const:'renanmt.switch-magic'},version:{const:2},
-    behavior:object({includeSpecial:{type:'boolean'},hoverSelect:{type:'boolean'},showLogo:{type:'boolean'}}),
+    behavior:object({includeSpecial:{type:'boolean'},hoverSelect:{type:'boolean'},showLogo:{type:'boolean'},backgroundBlur:{type:'integer',minimum:0,maximum:100,description:'Background blur percentage; 0 disables blur.'}}),
     profiles:object({workspace:profile,monitor:profile,all:profile,spaces:profile}),
     customViews:{type:'array',maxItems:64,items:view},
     views:{type:'null',description:'Built-in templates are read-only and loaded from defaults.json.'},

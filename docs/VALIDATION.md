@@ -1,5 +1,35 @@
 # Validation
 
+## Version 0.4.0
+
+- Full `python scripts/check.py`: 19 model tests, Lua lifecycle tests, offscreen
+  workspace-card and settings tests, 6 installer tests, 6 migration tests,
+  manifest validation, JSON checks, and QML parsing.
+- Live checks: all default shortcuts; custom Ctrl+Super+K and Ctrl+Super+Tab;
+  single-step cycling, modifier release, reassignment, and saved-binding restoration.
+- Configuration reload, plugin disable/enable, and lease expiry restore and
+  reattach bindings correctly, with no Hyprland configuration errors.
+- All four scopes open on the focused output across three monitors.
+- Seven README screenshots regenerated from fictional fixtures and inspected.
+
+## Configurable shortcuts and settings
+
+- Live Alt+Super+Tab input verifies all four arrows, WASD and repeated Tab,
+  with one selection step per press in List view. Escape restores the desktop
+  keyboard mode. Lua tests cover layer filtering, previous-mode restoration
+  and cleanup when the shortcut lease expires.
+
+- 19 model tests cover default migration, custom chord validation, conflicts,
+  confirmed reassignment, disabled assignments, persistence and reset while
+  preserving custom views.
+- Offscreen settings interactions verify conflict cancellation/acceptance,
+  dropdown rollback, autosave, background blur, Display logo, reset confirmation and preservation
+  of custom views, plus scrolling/clipping with the duplicate form open.
+- Live physical input verifies all four default scopes, repeated-key cycling,
+  custom Ctrl+Super+K and Ctrl+Super+Tab, modifier release, and restoration of
+  saved desktop actions when a shortcut is removed.
+
+
 ## Workspace overview review fixes
 
 - Offscreen QML checks use synthetic desktop entries to verify app icons,

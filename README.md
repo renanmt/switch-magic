@@ -26,7 +26,7 @@ Switch Magic keeps your windows in sight while you hold **Alt**, including above
 - **Your own style.** Duplicate a view and tune its geometry, typography, borders, shadows, and motion.
 - **Your choice of previews.** Live windows, snapshots, icons, or live capture for the selected card only.
 - **Made for your theme.** Omarchy colors and fonts, with optional per-view overrides.
-- **Automatic saving.** Every valid change saves as you go. No Apply button, no extra step.
+- **Automatic saving.** Every valid change saves as you go. View changes need no extra save step.
 
 ## Quick start
 
@@ -51,7 +51,7 @@ omarchy-shell switch-magic settings
 <details>
 <summary><strong>How automatic shortcuts work</strong></summary>
 
-While enabled, Switch Magic registers its four shortcuts in Hyprland's running configuration. Disabling or removing the plugin reloads your saved Hyprland configuration, restoring Omarchy's defaults or your saved custom bindings. A watchdog also restores them if the shell stops unexpectedly (within about eight seconds).
+While enabled, Switch Magic registers its assigned shortcuts in Hyprland's running configuration. Changing assignments, disabling or removing the plugin reloads your saved Hyprland configuration, restoring Omarchy's defaults or your saved custom bindings. A watchdog also restores them if the shell stops unexpectedly (within about eight seconds).
 
 New installations never edit your Hyprland configuration files. Upgrading from the old installer automatically backs up and removes its exact marked include from `~/.config/hypr/bindings.lua`. Backups are stored in `~/.config/switch-magic/backups/`. A manually modified legacy block is left untouched and reported in preferences.
 
@@ -61,26 +61,35 @@ New installations never edit your Hyprland configuration files. Upgrading from t
 
 | Shortcut | Windows to browse | Default view | Default previews |
 | :--- | :--- | :--- | :--- |
-| **Alt + Tab** | Workspaces on the focused monitor | Grid | Live selection |
+| **Alt + Tab** | Current workspace windows | Carousel | Live |
 | **Shift + Alt + Tab** | Every workspace on the focused monitor | Hand of cards | Snapshot |
 | **Ctrl + Alt + Tab** | Every workspace on every monitor | Grid | Live selection |
-| **Ctrl + Super + Tab** | Current workspace windows | Carousel | Live |
+| **Alt + Super + Tab** | Workspaces on the focused monitor | Grid | Live selection |
 
-Choose a different view and preview mode for each shortcut independently.
+In **Views**, select a scope and use the shortcut dropdown on the right. It offers the available shortcuts,
+**Unassigned**, and **Custom…**. For a custom chord, enter modifiers and a key
+(for example `Ctrl + Super + K`) and select **Apply**. If another scope already
+uses that shortcut, confirm **Move shortcut** to reassign it; the previous scope
+becomes unassigned. In **Views**, choose a layout and preview mode for each scope independently.
 
-The workspace overview shows one card per workspace, with small previews of its windows. Use the arrow keys to choose a space, then release Alt or press Enter to switch to it. The overview lists workspaces reported by Hyprland on the focused monitor, including empty workspaces.
+The workspace overview shows one card per workspace, with small previews of its windows. Use the arrow keys or WASD to choose a space, then release Alt or press Enter to switch to it. The overview lists workspaces reported by Hyprland on the focused monitor, including empty workspaces.
+
+![Spaces overview with one card per workspace and icon previews of its windows](docs/images/spaces.png)
 
 | While the switcher is open | Action |
 | :--- | :--- |
 | Keep holding the shortcut modifiers | Keep the switcher visible |
-| Press **Tab** again | Browse the next space or window |
-| **← / →** | Move backward or forward |
-| **↑ / ↓** | Move between grid rows |
-| Release **Alt** / **Ctrl+Super**, press **Enter**, or click a card | Switch to the selected space or focus the selected window |
+| Press the shortcut’s key again (**Tab** by default) | Browse the next space or window |
+| **← / →** or **A / D** | Move backward or forward |
+| **↑ / ↓** or **W / S** | Move between grid rows |
+| Release **Alt**, press **Enter**, or click a card | Switch to the selected space or focus the selected window |
 | **Esc** | Cancel without switching |
 | **F2** | Open preferences |
 
-**Shift + Alt + Tab selects the monitor scope**; use the arrow keys to browse backward. Opening preferences keeps them visible after you release Alt.
+**Shift + Alt + Tab selects the monitor scope by default**; use the arrow keys
+to browse backward. For custom chords without Alt, release Super, Ctrl, or Shift
+(in that priority order) to commit. Opening preferences keeps them visible after
+modifier release.
 
 ## Four ways to find your window
 
@@ -104,15 +113,15 @@ A focused, vertical list with small previews and room for window titles. List an
 
 ## Make it yours
 
-### A different view for every shortcut
+### Choose views and shortcuts
 
-Choose a scope, browse your view library, and pick a preview mode. The carousel shows navigation arrows only when more views are available.
+Open **Views** and select Workspace, Monitor, Everywhere, or Spaces. Choose a layout and preview mode below, and set that scope’s keyboard shortcut with the dropdown on the right. Select **Custom…** to enter your own chord, or **Unassigned** to disable its shortcut. Conflicting assignments ask before moving the shortcut.
 
-![Shortcut settings with the four default views and per-scope preview options](docs/images/shortcuts.png)
+![Views settings with a shortcut selector, background blur at 20%, Display logo, and per-scope previews](docs/images/views.png)
 
 ### Your view, down to the details
 
-Open **View studio**, choose a template, select **Duplicate view**, and give your creation a name. Adjust the controls and try the motion in the interactive preview.
+Open **View studio**, choose a template, select **Duplicate view**, and give your creation a name. The view selector and duplication controls stay at the top of the left column. Adjust the controls below and try the motion in the independently scrolling preview on the right.
 
 ![View studio editing a custom grid, with geometry controls and an interactive preview](docs/images/view-studio.png)
 
@@ -127,7 +136,11 @@ Open **View studio**, choose a template, select **Duplicate view**, and give you
 
 Everything saves automatically. Built-in views remain read-only, so you always have a starting point. New installations include **only the four defaults**; your named views live in your own settings. The custom view shown here is a demonstration.
 
-In **Shortcuts**, toggle **Picker branding** to show or hide the Switch Magic logo and wordmark.
+In **Views**, the **Background blur** slider defaults to 20% and sets the desktop blur from 0% (off)
+to 100%. The background uses an in-memory snapshot while the picker is open.
+Use **Display logo** to show or hide the picker logo and wordmark.
+**Reset to defaults…** restores shortcuts, view assignments, preview modes and
+behavior after confirmation. Your custom views and their styling are kept.
 
 Custom views can be renamed or deleted with confirmation. Deleting an assigned view returns its shortcuts to the corresponding built-in template.
 
@@ -159,7 +172,7 @@ Read the [configuration guide](docs/CONFIGURATION.md), explore the [built-in def
 
 ## Development
 
-QML interface, JavaScript layout logic, and a small Lua bridge for Alt-release handling. No downloaded JavaScript dependencies.
+QML interface, JavaScript layout logic, and a small Lua bridge for shortcut ownership and modifier-release handling. No downloaded JavaScript dependencies.
 
 ```sh
 python scripts/check.py

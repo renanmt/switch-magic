@@ -176,3 +176,63 @@ test('fresh installs ship only the four original views and no personal presets',
         assert.deepEqual(valid(config),[]);
     }
 });
+
+test('shortcuts migrate to defaults, canonicalize aliases and reject duplicate or unsafe chords', () => {
+    assert.equal(defaults.profiles.workspace.shortcut, 'ALT + TAB');
+    assert.equal(defaults.profiles.spaces.shortcut, 'ALT + SUPER + TAB');
+    assert.equal(M.normalizeShortcut(' win + control + k '), 'CTRL + SUPER + K');
+    assert.equal(M.normalizeShortcut('super + alt + tab'), 'ALT + SUPER + TAB');
+    for (const chord of ['TAB', 'CTRL + CTRL + K', 'ALT +', 'ALT + ESC', 'ALT + TAB; os.execute("bad")', 'CTRL + a\nK'])
+        assert.throws(() => M.normalizeShortcut(chord));
+    const old=M.persisted(defaults);
+    for (const scope of M.scopes) delete old.profiles[scope].shortcut;
+    assert.deepEqual(M.normalize(defaults,old).profiles,defaults.profiles);
+    const duplicate=M.clone(defaults);
+    duplicate.profiles.spaces.shortcut='Alt+Tab';
+    assert.match(valid(duplicate).join(' '),/already assigned/);
+    const custom=M.assignShortcut(defaults,'spaces','win+control+k',false);
+    assert.equal(custom.profiles.spaces.shortcut,'CTRL + SUPER + K');
+    assert.deepEqual(M.normalize(defaults,M.persisted(custom)),custom);
+});
+test('confirmed shortcut reassignment leaves the previous scope unassigned and survives reload', () => {
+    const original=JSON.stringify(defaults);
+    assert.equal(M.shortcutOwner(defaults,'alt+tab','spaces'),'workspace');
+    assert.throws(()=>M.assignShortcut(defaults,'spaces','alt+tab',false),/already assigned/);
+    const reassigned=M.assignShortcut(defaults,'spaces','alt+tab',true);
+    assert.equal(reassigned.profiles.workspace.shortcut,'');
+    assert.equal(reassigned.profiles.spaces.shortcut,'ALT + TAB');
+    assert.deepEqual(valid(reassigned),[]);
+    assert.deepEqual(M.normalize(defaults,M.persisted(reassigned)),reassigned);
+    assert.equal(JSON.stringify(defaults),original);
+    assert.ok(!M.bindingCode(reassigned).includes('"workspace"'));
+    let disabled=M.clone(defaults);
+    for (const scope of M.scopes) disabled=M.assignShortcut(disabled,scope,'',false);
+    assert.equal(M.bindingCode(disabled),'{}');
+    assert.deepEqual(valid(disabled),[]);
+});
+test('reset restores all shipped settings while retaining complete custom views', () => {
+    const created=M.duplicate(defaults,'fan','Keep this');
+    let changed=M.changeView(created.config,created.id,'card.radius',7);
+    changed.profiles.workspace={view:created.id,preview:'icon',shortcut:'CTRL + K'};
+    changed.behavior.showLogo=false;
+    changed.behavior.hoverSelect=true;
+    const reset=M.resetSettings(changed,defaults);
+    assert.deepEqual(reset.profiles,defaults.profiles);
+    assert.deepEqual(reset.behavior,defaults.behavior);
+    assert.deepEqual(reset.customViews,changed.customViews);
+    assert.equal(M.view(reset,created.id).card.radius,7);
+    assert.notEqual(reset.customViews,changed.customViews);
+    assert.deepEqual(valid(reset),[]);
+});
+
+test('background blur defaults to 20%, persists percentages and rejects invalid values', () => {
+    assert.equal(M.normalize(defaults, {version:2,behavior:{showLogo:false}}).behavior.backgroundBlur,20);
+    for (const amount of [0, 35, 100]) {
+        const config=M.merge(defaults,{behavior:{backgroundBlur:amount}});
+        assert.deepEqual(valid(config),[]);
+        assert.equal(M.normalize(defaults,M.persisted(config)).behavior.backgroundBlur,amount);
+        assert.equal(M.resetSettings(config,defaults).behavior.backgroundBlur,20);
+    }
+    for (const amount of [-1,101,1.5,'50',null])
+        assert.match(valid(M.merge(defaults,{behavior:{backgroundBlur:amount}})).join(' '),/backgroundBlur/);
+});

@@ -18,7 +18,6 @@ Item {
     property bool opened: false
     property bool editing: false
     property bool demo: false
-    property bool commitOnModifierRelease: false
     property string scope: "workspace"
     property var rows: []
     property int selected: 0
@@ -30,7 +29,7 @@ Item {
     property var config: ({})
     property string configError: ""
     readonly property string bindingError: automaticBindings.item ? automaticBindings.item.error : ""
-    Loader { id: automaticBindings; active: root.registerShortcuts; sourceComponent: Component { AutomaticBindings {} } }
+    Loader { id: automaticBindings; active: root.registerShortcuts && root.ready; sourceComponent: Component { AutomaticBindings { bindingCode: Model.bindingCode(root.config) } } }
     property string overrideLayout: ""
     readonly property bool ready: !!config.profiles && !!config.views
     readonly property var profile: ready ? config.profiles[scope] : ({view: "carousel", preview: "live"})
@@ -89,6 +88,7 @@ Item {
     function saveSettings(next) {
         var errors = Model.validate(next, defaults, Fields.groups);
         if (errors.length) { configError = errors.join("; "); return false; }
+        next = Model.normalize(defaults, Model.persisted(next));
         if (JSON.stringify(next) === JSON.stringify(config)) { configError = ""; return true; }
         if (!shell || !shell.updateEntryInline) { configError = "Settings can be saved when running inside Omarchy."; return false; }
         if (!shell.updateEntryInline("renanmt.switch-magic", Model.persisted(next))) { configError = "Omarchy could not save settings."; return false; }
@@ -126,7 +126,7 @@ Item {
         var monitor = Hyprland.focusedMonitor;
         return Quickshell.screens.find(function(s) { return monitor && s.name === monitor.name; }) || Quickshell.screens[0];
     }
-    function begin(nextScope, modifierRelease) {
+    function begin(nextScope) {
         if (!ready || editing) return;
         if (opened && scope === nextScope) { step(1); return; }
         if (!opened) {
@@ -134,8 +134,9 @@ Item {
             var workspace = Hyprland.focusedWorkspace;
             context = { monitorId: monitor ? monitor.id : -1, workspaceId: workspace ? workspace.id : -1 };
             displayScreen = screenForFocus();
+            desktopBackdrop.prepare(displayScreen, config.behavior.backgroundBlur > 0);
         }
-        demo = false; overrideLayout = ""; scope = nextScope; commitOnModifierRelease = !!modifierRelease;
+        demo = false; overrideLayout = ""; scope = nextScope;
         if (scope === "spaces") {
             rows = Model.selectWorkspaces(allWorkspaces(), context.monitorId);
             selected = Math.max(0, rows.findIndex(function(workspace) { return workspace.active; }));
@@ -146,11 +147,28 @@ Item {
         opened = true;
         Qt.callLater(function() { keyCatcher.forceActiveFocus(); });
     }
+    function isShortcut(event) {
+        var keys = {TAB: Qt.Key_Tab, SPACE: Qt.Key_Space, RETURN: Qt.Key_Return, BACKSPACE: Qt.Key_Backspace,
+            DELETE: Qt.Key_Delete, INSERT: Qt.Key_Insert, HOME: Qt.Key_Home, END: Qt.Key_End,
+            PAGE_UP: Qt.Key_PageUp, PAGE_DOWN: Qt.Key_PageDown, LEFT: Qt.Key_Left, RIGHT: Qt.Key_Right,
+            UP: Qt.Key_Up, DOWN: Qt.Key_Down, GRAVE: Qt.Key_QuoteLeft, MINUS: Qt.Key_Minus, EQUAL: Qt.Key_Equal,
+            BRACKETLEFT: Qt.Key_BracketLeft, BRACKETRIGHT: Qt.Key_BracketRight, SEMICOLON: Qt.Key_Semicolon,
+            APOSTROPHE: Qt.Key_Apostrophe, COMMA: Qt.Key_Comma, PERIOD: Qt.Key_Period, SLASH: Qt.Key_Slash, BACKSLASH: Qt.Key_Backslash};
+        return Model.scopes.some(function(scope) {
+            var shortcut = root.config.profiles[scope].shortcut;
+            if (!shortcut) return false;
+            var parts = shortcut.split(" + "), key = parts.pop();
+            var code = key.length === 1 ? key.charCodeAt(0) : /^F[0-9]+$/.test(key) ? Qt.Key_F1 + Number(key.slice(1)) - 1 : keys[key];
+            var modifiers = 0, masks = {ALT: Qt.AltModifier, CTRL: Qt.ControlModifier, SHIFT: Qt.ShiftModifier, SUPER: Qt.MetaModifier};
+            parts.forEach(function(part) { modifiers |= masks[part]; });
+            return event.modifiers === modifiers && (event.key === code || (code === Qt.Key_Tab && event.key === Qt.Key_Backtab));
+        });
+    }
     function step(delta) {
         if (!opened || editing || !rows.length) return;
         selected = Model.wrap(selected + delta, rows.length);
     }
-    function close() { if (editing && preferencesLoader.item && !preferencesLoader.item.prepareClose()) return; opened = false; editing = false; demo = false; commitOnModifierRelease = false; rows = []; overrideLayout = ""; }
+    function close() { if (editing && preferencesLoader.item && !preferencesLoader.item.prepareClose()) return; opened = false; desktopBackdrop.clear(); editing = false; demo = false; rows = []; overrideLayout = ""; }
     function commit() {
         if (!opened || editing || demo) return;
         if (scope === "spaces") {
@@ -192,7 +210,9 @@ Item {
         rows = result.windows; selected = result.index;
     }
     function settings() {
-        displayScreen = screenForFocus(); rows = []; opened = true; editing = true; demo = false;
+        displayScreen = screenForFocus();
+        if (!opened) desktopBackdrop.prepare(displayScreen, true);
+        rows = []; opened = true; editing = true; demo = false;
         Qt.callLater(function() { keyCatcher.forceActiveFocus(); });
     }
     function preview(name) {
@@ -228,8 +248,8 @@ Item {
     GlobalShortcut { appid: "switch-magic"; name: "monitor"; description: "Switch Magic: current monitor"; onPressed: root.begin("monitor") }
     GlobalShortcut { appid: "switch-magic"; name: "all"; description: "Switch Magic: all workspaces"; onPressed: root.begin("all") }
     GlobalShortcut { appid: "switch-magic"; name: "spaces"; description: "Switch Magic: workspace overview"; onPressed: root.begin("spaces") }
-    GlobalShortcut { appid: "switch-magic"; name: "workspace-chord"; description: "Switch Magic: current workspace"; onPressed: root.begin("workspace", true) }
-    GlobalShortcut { appid: "switch-magic"; name: "commit"; description: "Switch Magic: release Alt"; onPressed: root.commit() }
+    GlobalShortcut { appid: "switch-magic"; name: "workspace"; description: "Switch Magic: current workspace"; onPressed: root.begin("workspace") }
+    GlobalShortcut { appid: "switch-magic"; name: "commit"; description: "Switch Magic: release shortcut modifier"; onPressed: root.commit() }
             }
         }
     }
@@ -260,18 +280,26 @@ Item {
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.keyboardFocus: root.opened ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
-        Rectangle { anchors.fill: parent; color: Qt.alpha(Color.background, root.activeView ? root.activeView.scene.dimOpacity : 0.84) }
+        DesktopBackdrop {
+            id: desktopBackdrop
+            anchors.fill: parent
+            strength: root.ready ? root.config.behavior.backgroundBlur : 0
+            onPendingChanged: if (!pending && root.opened) Qt.callLater(function() { keyCatcher.forceActiveFocus(); })
+        }
+        Rectangle { visible: !desktopBackdrop.pending; anchors.fill: parent; color: Qt.alpha(Color.background, root.activeView ? root.activeView.scene.dimOpacity : 0.84) }
         MouseArea { anchors.fill: parent; onClicked: root.close() }
         Item {
             id: keyCatcher
+            visible: !desktopBackdrop.pending
             anchors.fill: parent; focus: true
             Keys.onPressed: function(event) {
+                if (!root.editing && root.isShortcut(event)) { event.accepted = true; return; }
                 if (event.key === Qt.Key_Escape) root.close();
                 else if (!root.editing && event.key === Qt.Key_F2) root.settings();
-                else if (!root.editing && (event.key === Qt.Key_Left || (event.key === Qt.Key_Backtab && !(event.modifiers & Qt.AltModifier)))) root.step(-1);
-                else if (!root.editing && event.key === Qt.Key_Right) root.step(1);
-                else if (!root.editing && event.key === Qt.Key_Up) root.step(root.layoutName === "grid" ? -root.geometry.columns : -1);
-                else if (!root.editing && event.key === Qt.Key_Down) root.step(root.layoutName === "grid" ? root.geometry.columns : 1);
+                else if (!root.editing && (event.key === Qt.Key_Left || event.key === Qt.Key_A || (event.key === Qt.Key_Backtab && !(event.modifiers & Qt.AltModifier)))) root.step(-1);
+                else if (!root.editing && (event.key === Qt.Key_Right || event.key === Qt.Key_D)) root.step(1);
+                else if (!root.editing && (event.key === Qt.Key_Up || event.key === Qt.Key_W)) root.step(root.layoutName === "grid" ? -root.geometry.columns : -1);
+                else if (!root.editing && (event.key === Qt.Key_Down || event.key === Qt.Key_S)) root.step(root.layoutName === "grid" ? root.geometry.columns : 1);
                 else if (!root.editing && (event.key === Qt.Key_Return || event.key === Qt.Key_Enter)) { if (root.demo) root.close(); else root.commit(); }
                 else if (!root.editing && event.key === Qt.Key_Tab) {
                     // Hyprland owns all Alt+Tab chords. Handling the same
@@ -281,9 +309,8 @@ Item {
                 event.accepted = !root.editing || event.key === Qt.Key_Escape;
             }
             Keys.onReleased: function(event) {
-                // Alt release is owned by bindings.lua, including dual-Alt.
+                // Modifier release is owned by bindings.lua, including both sides.
                 // Consuming here prevents keys leaking into the underlying app.
-                if (root.commitOnModifierRelease && (event.key === Qt.Key_Control || event.key === Qt.Key_Meta)) root.commit();
                 event.accepted = true;
             }
             Item {
@@ -401,7 +428,7 @@ Item {
                     Text {
                         visible: root.activeView && root.activeView.scene.showHints
                         anchors.horizontalCenter: parent.horizontalCenter
-                        text: root.demo ? "LAYOUT PREVIEW     ← → browse     Esc close" : "HOLD ALT    ·    TAB browse    ·    ← → navigate    ·    RELEASE to switch    ·    F2 customize"
+                        text: root.demo ? "LAYOUT PREVIEW     ← → browse     Esc close" : (root.profile.shortcut ? Model.shortcutLabel(root.profile.shortcut) + " browse    ·    RELEASE modifier to switch" : "TAB browse    ·    ENTER to switch") + "    ·    Arrows / WASD navigate    ·    F2 customize"
                         color: root.themeColors.muted; font.family: root.fontFamily; font.pixelSize: 10; font.letterSpacing: 0.6
                     }
                 }
@@ -415,7 +442,7 @@ Item {
                         width: Math.min(1100, panel.width - 48)
                         height: Math.min(850, panel.height - 48)
                         screenWidth: panel.width; screenHeight: panel.height
-                        config: root.config; themeColors: root.themeColors; fontFamily: root.fontFamily
+                        config: root.config; defaults: root.defaults; themeColors: root.themeColors; fontFamily: root.fontFamily
                         error: root.bindingError || root.configError
                         onSave: function(next) { saveCompleted(root.saveSettings(next)); }
                         onDismiss: root.close()
