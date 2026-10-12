@@ -13,7 +13,7 @@ plugin entry** in `~/.config/omarchy/shell.json`:
     "monitor": { "view": "list", "preview": "snapshot", "shortcut": "ALT + SHIFT + TAB" },
     "all": { "view": "grid", "preview": "icon", "shortcut": "CTRL + ALT + TAB" },
     "spaces": { "view": "grid", "preview": "hybrid", "shortcut": "ALT + SUPER + TAB" },
-    "app": { "view": "carousel", "preview": "live", "shortcut": "ALT + GRAVE" }
+    "app": { "view": "carousel", "preview": "live", "shortcut": "" }
   },
   "customViews": [],
   "behavior": { "hoverSelect": false, "includeSpecial": false, "showLogo": true, "backgroundBlur": 20 }
@@ -39,10 +39,11 @@ button restores defaults while retaining the complete `customViews` library.
 
 The `app` profile matches the focused window's app ID/window class across all
 workspaces and monitors. The originating app stays fixed until the picker closes.
-Its default is Alt + backtick (`ALT + GRAVE`); a literal backtick is also accepted
-in custom shortcuts. Existing settings gain this profile automatically. If another
-scope already owns Alt + backtick, that assignment is preserved and App starts
-unassigned. Choose a shortcut in Views to enable it.
+Its shortcut is unassigned by default on new installations, upgrades and reset.
+Choose a shortcut in Views → App to enable it; Alt + backtick (`ALT + GRAVE`) is
+available as an opt-in preset, and a literal backtick is accepted in custom chords.
+Existing settings gain this profile automatically without claiming a desktop
+shortcut. Any App shortcut explicitly saved by the user is preserved on reload.
 
 | View section | Properties |
 | --- | --- |

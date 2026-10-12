@@ -233,7 +233,10 @@ test('confirmed shortcut reassignment leaves the previous scope unassigned and s
     assert.equal(M.bindingCode(disabled),'{}');
     assert.deepEqual(valid(disabled),[]);
 });
-test('app shortcut migration preserves existing profiles and occupied Alt+grave assignments', () => {
+test('app starts unassigned on install, upgrade and reset, preserving user-chosen shortcuts', () => {
+    assert.equal(defaults.profiles.app.shortcut,'');
+    assert.equal(M.normalize(defaults,{}).profiles.app.shortcut,'');
+    assert.equal(M.normalize(defaults,{version:1}).profiles.app.shortcut,'');
     const old = M.persisted(defaults);
     delete old.profiles.app;
     old.profiles.workspace.view = 'list';
@@ -243,7 +246,7 @@ test('app shortcut migration preserves existing profiles and occupied Alt+grave 
     assert.deepEqual(valid(upgraded),[]);
     assert.equal(M.normalizeShortcut('Alt + `'),'ALT + GRAVE');
     assert.equal(M.shortcutLabel('ALT + GRAVE'),'Alt + `');
-    assert.ok(M.bindingCode(upgraded).includes('{"ALT + GRAVE","app"}'));
+    assert.ok(!M.bindingCode(upgraded).includes('"app"'));
     old.profiles.workspace.shortcut = 'Alt + grave';
     const occupied = M.normalize(defaults,old);
     assert.equal(occupied.profiles.workspace.shortcut,'ALT + GRAVE');
@@ -254,6 +257,9 @@ test('app shortcut migration preserves existing profiles and occupied Alt+grave 
     assert.equal(reassigned.profiles.workspace.shortcut,'');
     assert.equal(reassigned.profiles.app.shortcut,'ALT + GRAVE');
     assert.deepEqual(valid(reassigned),[]);
+    assert.ok(M.bindingCode(reassigned).includes('{"ALT + GRAVE","app"}'));
+    assert.deepEqual(M.normalize(defaults,M.persisted(reassigned)),reassigned);
+    assert.equal(M.resetSettings(reassigned,defaults).profiles.app.shortcut,'');
 });
 test('reset restores all shipped settings while retaining complete custom views', () => {
     const created=M.duplicate(defaults,'fan','Keep this');

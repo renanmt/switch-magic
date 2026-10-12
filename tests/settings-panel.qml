@@ -45,7 +45,8 @@ FloatingWindow {
                 panel.selectedScope = "app";
                 events.wait(20);
                 var appChoice = events.findChild(window.child("scopeShortcut"), "propertyChoice");
-                window.check(appChoice.displayText === "Alt + `", "App scope must display its backtick shortcut");
+                window.check(appChoice.displayText === "Unassigned", "App scope must start without a shortcut");
+                window.check(appChoice.model.indexOf("Alt + `") >= 0, "Alt+backtick must remain an opt-in choice");
                 panel.selectView("list");
                 window.child("scopeShortcut").requested("Ctrl + `");
                 events.wait(350);

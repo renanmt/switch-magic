@@ -18,9 +18,14 @@ _No response_
 
 Switch Magic is a visual workspace and window switcher with four built-in layouts,
 live or snapshot previews, configurable shortcuts, and a custom view editor. Permanent plugin ID:
-`renanmt.switch-magic`. Version: `0.4.0`.
+`renanmt.switch-magic`. Version: `0.5.0`.
 
-No manual setup is needed in 0.4.0. Standard plugin enable attaches runtime
+Version 0.5.0 adds an App scope for windows matching the focused app across
+workspaces and monitors, with its own view and shortcut settings. It starts
+unassigned; users can choose Alt+backtick or another chord in Views → App.
+Existing shortcut assignments and custom views are preserved on upgrade.
+
+No manual setup is needed. Standard plugin enable attaches runtime
 shortcuts; disable/removal restores saved bindings by reloading Hyprland's
 configuration. A heartbeat lease restores bindings after an unexpected shell exit.
 The migration helper removes only the exact legacy marked include with a backup.

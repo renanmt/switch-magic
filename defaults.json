@@ -30,7 +30,7 @@
     "app": {
       "view": "carousel",
       "preview": "live",
-      "shortcut": "ALT + GRAVE"
+      "shortcut": ""
     }
   },
   "views": [

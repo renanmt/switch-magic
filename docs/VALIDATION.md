@@ -1,16 +1,20 @@
 # Validation
 
-## App scope (feature branch)
+## Version 0.5.0
 
 - Full `python scripts/check.py` passes with 21 model tests, Lua lifecycle tests,
   offscreen QML tests, installer/migration tests, manifest validation and QML parsing.
 - App tests cover exact app matching across workspaces and monitors, MRU order,
   hidden/unmapped/special windows, missing app identity, single-window selection,
-  closing the selection, settings migration and existing Alt+grave assignments.
+  closing the selection, unassigned defaults on install/upgrade/reset, existing
+  Alt+grave assignments and persistence of explicitly chosen App shortcuts.
 - Lua tests cover the App route in both desktop and picker keyboard modes and
-  committing on Alt release. Settings tests cover the App shortcut label and
-  saving its own layout and custom shortcut.
-- Physical Alt+backtick input still needs a live desktop check.
+  committing on Alt release when assigned. Settings tests cover the Unassigned
+  default, opt-in Alt+backtick choice and saving App's layout and custom shortcut.
+- Activated the feature checkout in the live Omarchy shell and verified the App
+  profile, Alt+grave bindings in desktop and picker modes, and no plugin or
+  Hyprland configuration errors. Physical input and end-to-end focus switching
+  remain a manual check.
 
 ## Version 0.4.0
 

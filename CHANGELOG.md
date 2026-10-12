@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.5.0 — 2026-10-12
+
+- Add an App scope for windows matching the focused app across workspaces and monitors, with no shortcut assigned by default.
+- Keep the originating app fixed while the picker is open, with recent windows first and the usual hidden, unmapped and special-workspace filters.
+- Give App its own layout, preview mode and configurable shortcut in Views, defaulting to Carousel with live previews.
+- Accept a literal backtick in custom shortcuts and display it instead of the GRAVE key name.
+- Leave App unassigned on new installations, upgrades and reset so existing desktop shortcuts stay available; users can opt into Alt+backtick or another chord in Views → App.
+- Document the fifth scope and cover filtering, migration, shortcut routing, modifier release and settings persistence with regression tests.
+
 ## 0.4.0 — 2026-10-09
 
 - Fix arrow navigation while shortcut modifiers are held by isolating picker input from desktop bindings; add WASD navigation.

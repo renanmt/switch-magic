@@ -21,6 +21,10 @@
 
 Switch Magic keeps your windows in sight while you hold **Alt**, including above fullscreen apps. Browse the previews, release Alt, and the selected window takes focus.
 
+**New in 0.5.0:** browse only the focused app's windows, across workspaces and
+monitors. App starts with no shortcut assigned; choose one under **Views → App**,
+along with its layout and previews. See the [changelog](CHANGELOG.md).
+
 - **Five scopes.** Switch windows on the current workspace or monitor, browse every window, open a workspace-first overview, or cycle through the current app's windows.
 - **Four built-in views.** List, Grid, Carousel, and Hand of cards.
 - **Your own style.** Duplicate a view and tune its geometry, typography, borders, shadows, and motion.
@@ -65,13 +69,17 @@ New installations never edit your Hyprland configuration files. Upgrading from t
 | **Shift + Alt + Tab** | Every workspace on the focused monitor | Hand of cards | Snapshot |
 | **Ctrl + Alt + Tab** | Every workspace on every monitor | Grid | Live selection |
 | **Alt + Super + Tab** | Workspaces on the focused monitor | Grid | Live selection |
-| **Alt + &#96;** | Current app windows across all workspaces and monitors | Carousel | Live |
+| **Unassigned** (choose in Views → App) | Current app windows across all workspaces and monitors | Carousel | Live |
 
-Hold **Alt** and press **`** (backtick) to browse windows with the same app ID/window class
-as the focused window. Press backtick again to cycle; release Alt to switch.
+Assign a shortcut under **Views → App** to browse windows with the same app ID/window
+class as the focused window. For example, choose **Alt + `** (backtick), then hold
+Alt and press backtick to cycle; release Alt to switch.
 The app is fixed when the picker opens. Hidden and unmapped windows are excluded;
 special workspaces follow the **includeSpecial** setting. With no focused app,
 the list is empty.
+
+New installations and upgrades leave App unassigned so it does not take over an
+existing desktop shortcut. Any App shortcut you explicitly save is retained.
 
 In **Views**, select a scope and use the shortcut dropdown on the right. It offers the available shortcuts,
 **Unassigned**, and **Custom…**. For a custom chord, enter modifiers and a key
