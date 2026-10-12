@@ -127,6 +127,29 @@
               ]
             }
           }
+        },
+        "app": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "shortcut": {
+              "type": "string",
+              "description": "Modifier chord such as ALT + TAB; empty disables this scope shortcut."
+            },
+            "view": {
+              "type": "string",
+              "description": "Built-in id or a custom view id"
+            },
+            "preview": {
+              "enum": [
+                "view",
+                "live",
+                "snapshot",
+                "hybrid",
+                "icon"
+              ]
+            }
+          }
         }
       }
     },

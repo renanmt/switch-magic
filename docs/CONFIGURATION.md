@@ -12,7 +12,8 @@ plugin entry** in `~/.config/omarchy/shell.json`:
     "workspace": { "view": "fan", "preview": "view", "shortcut": "ALT + TAB" },
     "monitor": { "view": "list", "preview": "snapshot", "shortcut": "ALT + SHIFT + TAB" },
     "all": { "view": "grid", "preview": "icon", "shortcut": "CTRL + ALT + TAB" },
-    "spaces": { "view": "grid", "preview": "hybrid", "shortcut": "ALT + SUPER + TAB" }
+    "spaces": { "view": "grid", "preview": "hybrid", "shortcut": "ALT + SUPER + TAB" },
+    "app": { "view": "carousel", "preview": "live", "shortcut": "ALT + GRAVE" }
   },
   "customViews": [],
   "behavior": { "hoverSelect": false, "includeSpecial": false, "showLogo": true, "backgroundBlur": 20 }
@@ -35,6 +36,13 @@ Hyprland bindings before attaching the new assignments.
 
 The UI asks before moving an occupied shortcut to another scope. Its reset
 button restores defaults while retaining the complete `customViews` library.
+
+The `app` profile matches the focused window's app ID/window class across all
+workspaces and monitors. The originating app stays fixed until the picker closes.
+Its default is Alt + backtick (`ALT + GRAVE`); a literal backtick is also accepted
+in custom shortcuts. Existing settings gain this profile automatically. If another
+scope already owns Alt + backtick, that assignment is preserved and App starts
+unassigned. Choose a shortcut in Views to enable it.
 
 | View section | Properties |
 | --- | --- |

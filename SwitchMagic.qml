@@ -48,7 +48,7 @@ Item {
     property real reveal: 1
     onOpenedChanged: if (opened && !editing) entrance.restart()
     NumberAnimation { id: entrance; target: root; property: "reveal"; from: 0; to: 1; duration: root.animation.enabled ? root.animation.entryDuration || 0 : 0; easing.type: root.easing }
-    readonly property string scopeLabel: scope === "workspace" ? "Current workspace" : scope === "monitor" ? "This monitor" : scope === "spaces" ? "Spaces on this monitor" : "All workspaces"
+    readonly property string scopeLabel: scope === "workspace" ? "Current workspace" : scope === "monitor" ? "This monitor" : scope === "spaces" ? "Spaces on this monitor" : scope === "app" ? "Current app" : "All workspaces"
     readonly property string fontFamily: Style.font.menuFamily
     readonly property var geometry: ready ? Model.metrics(layoutName, layout, rows.length, Math.max(280, panel.width - 100), Math.max(180, panel.height - 300)) : ({width: 1, height: 1, scale: 1, columns: 1, capacity: 1})
 
@@ -132,7 +132,12 @@ Item {
         if (!opened) {
             var monitor = Hyprland.focusedMonitor;
             var workspace = Hyprland.focusedWorkspace;
-            context = { monitorId: monitor ? monitor.id : -1, workspaceId: workspace ? workspace.id : -1 };
+            var active = Hyprland.activeToplevel;
+            var activeWindow = active ? allWindows().find(function(w) { return w.address === active.address; }) : null;
+            // Keep the originating app even after the picker takes keyboard focus
+            // or the user changes scopes while holding the shortcut modifier.
+            context = { monitorId: monitor ? monitor.id : -1, workspaceId: workspace ? workspace.id : -1,
+                appId: activeWindow ? activeWindow.appId : "" };
             displayScreen = screenForFocus();
             desktopBackdrop.prepare(displayScreen, config.behavior.backgroundBlur > 0);
         }
@@ -249,13 +254,14 @@ Item {
     GlobalShortcut { appid: "switch-magic"; name: "all"; description: "Switch Magic: all workspaces"; onPressed: root.begin("all") }
     GlobalShortcut { appid: "switch-magic"; name: "spaces"; description: "Switch Magic: workspace overview"; onPressed: root.begin("spaces") }
     GlobalShortcut { appid: "switch-magic"; name: "workspace"; description: "Switch Magic: current workspace"; onPressed: root.begin("workspace") }
+    GlobalShortcut { appid: "switch-magic"; name: "app"; description: "Switch Magic: current app"; onPressed: root.begin("app") }
     GlobalShortcut { appid: "switch-magic"; name: "commit"; description: "Switch Magic: release shortcut modifier"; onPressed: root.commit() }
             }
         }
     }
     IpcHandler {
         target: "switch-magic"
-        function show(scope: string): string { if (["workspace", "monitor", "all", "spaces"].indexOf(scope) < 0) return "unknown scope"; root.begin(scope); return "ok"; }
+        function show(scope: string): string { if (Model.scopes.indexOf(scope) < 0) return "unknown scope"; root.begin(scope); return "ok"; }
         function next(): string { root.step(1); return "ok"; }
         function previous(): string { root.step(-1); return "ok"; }
         function accept(): string { root.commit(); return "ok"; }

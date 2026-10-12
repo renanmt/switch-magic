@@ -17,6 +17,29 @@ test('active special workspace and pinned windows remain reachable', () => {
     assert.deepEqual(M.selectWindows(windows,'workspace',{workspaceId:-1,monitorId:0},false).map(w=>w.address), ['d']);
     assert.equal(M.selectWindows([win('pin',9,0,0,{pinned:true})],'workspace',{workspaceId:1,monitorId:0},false).length,1);
 });
+test('app scope matches only the originating app across workspaces and monitors in MRU order', () => {
+    const items = [
+        win('active', 1, 0, 0, {appId:'editor'}),
+        win('other-space', 2, 0, 2, {appId:'editor'}),
+        win('other-monitor', 3, 1, 1, {appId:'editor'}),
+        win('other-app', 1, 0, 3, {appId:'browser', title:'editor'}),
+        win('similar-app', 1, 0, 4, {appId:'editor-preview'}),
+        win('hidden', 1, 0, 5, {appId:'editor', hidden:true}),
+        win('unmapped', 1, 0, 6, {appId:'editor', mapped:false}),
+        win('special', -1, 0, 7, {appId:'editor', special:true}),
+        win('unknown', 1, 0, 8, {appId:''})
+    ];
+    const context = {workspaceId:1, monitorId:0, appId:'editor'};
+    const selected = M.selectWindows(items,'app',context,false);
+    assert.deepEqual(selected.map(w=>w.address), ['active','other-monitor','other-space']);
+    assert.equal(selected[M.initialIndex(selected,'active')].address,'other-monitor');
+    assert.deepEqual(M.selectWindows(items,'app',context,true).map(w=>w.address), ['active','other-monitor','other-space','special']);
+    for (const appId of ['', undefined, 'missing'])
+        assert.deepEqual(M.selectWindows(items,'app',{...context,appId},false), []);
+    assert.equal(M.initialIndex(M.selectWindows([items[0]],'app',context,false),'active'),0);
+    const closed = M.remaining(selected,['active','other-space'],1);
+    assert.equal(closed.windows[closed.index].address,'other-space');
+});
 test('initial selection, empty and single-window lists and negative wrapping', () => {
     assert.equal(M.initialIndex(windows,'a'),1);
     assert.equal(M.initialIndex([windows[0]],'a'),0);
@@ -209,6 +232,28 @@ test('confirmed shortcut reassignment leaves the previous scope unassigned and s
     for (const scope of M.scopes) disabled=M.assignShortcut(disabled,scope,'',false);
     assert.equal(M.bindingCode(disabled),'{}');
     assert.deepEqual(valid(disabled),[]);
+});
+test('app shortcut migration preserves existing profiles and occupied Alt+grave assignments', () => {
+    const old = M.persisted(defaults);
+    delete old.profiles.app;
+    old.profiles.workspace.view = 'list';
+    const upgraded = M.normalize(defaults,old);
+    assert.deepEqual(upgraded.profiles.app,defaults.profiles.app);
+    assert.equal(upgraded.profiles.workspace.view,'list');
+    assert.deepEqual(valid(upgraded),[]);
+    assert.equal(M.normalizeShortcut('Alt + `'),'ALT + GRAVE');
+    assert.equal(M.shortcutLabel('ALT + GRAVE'),'Alt + `');
+    assert.ok(M.bindingCode(upgraded).includes('{"ALT + GRAVE","app"}'));
+    old.profiles.workspace.shortcut = 'Alt + grave';
+    const occupied = M.normalize(defaults,old);
+    assert.equal(occupied.profiles.workspace.shortcut,'ALT + GRAVE');
+    assert.equal(occupied.profiles.app.shortcut,'');
+    assert.deepEqual(valid(occupied),[]);
+    assert.deepEqual(M.normalize(defaults,M.persisted(occupied)),occupied);
+    const reassigned = M.assignShortcut(occupied,'app','Alt + `',true);
+    assert.equal(reassigned.profiles.workspace.shortcut,'');
+    assert.equal(reassigned.profiles.app.shortcut,'ALT + GRAVE');
+    assert.deepEqual(valid(reassigned),[]);
 });
 test('reset restores all shipped settings while retaining complete custom views', () => {
     const created=M.duplicate(defaults,'fan','Keep this');

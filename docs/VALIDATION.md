@@ -1,5 +1,17 @@
 # Validation
 
+## App scope (feature branch)
+
+- Full `python scripts/check.py` passes with 21 model tests, Lua lifecycle tests,
+  offscreen QML tests, installer/migration tests, manifest validation and QML parsing.
+- App tests cover exact app matching across workspaces and monitors, MRU order,
+  hidden/unmapped/special windows, missing app identity, single-window selection,
+  closing the selection, settings migration and existing Alt+grave assignments.
+- Lua tests cover the App route in both desktop and picker keyboard modes and
+  committing on Alt release. Settings tests cover the App shortcut label and
+  saving its own layout and custom shortcut.
+- Physical Alt+backtick input still needs a live desktop check.
+
 ## Version 0.4.0
 
 - Full `python scripts/check.py`: 19 model tests, Lua lifecycle tests, offscreen

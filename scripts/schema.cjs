@@ -30,7 +30,7 @@ const profile=object({shortcut:{type:'string',description:'Modifier chord such a
 const schema=object({
     '$schema':{type:'string'},id:{const:'renanmt.switch-magic'},version:{const:2},
     behavior:object({includeSpecial:{type:'boolean'},hoverSelect:{type:'boolean'},showLogo:{type:'boolean'},backgroundBlur:{type:'integer',minimum:0,maximum:100,description:'Background blur percentage; 0 disables blur.'}}),
-    profiles:object({workspace:profile,monitor:profile,all:profile,spaces:profile}),
+    profiles:object({workspace:profile,monitor:profile,all:profile,spaces:profile,app:profile}),
     customViews:{type:'array',maxItems:64,items:view},
     views:{type:'null',description:'Built-in templates are read-only and loaded from defaults.json.'},
     layouts:{type:'null',description:'Obsolete v1 field.'},appearance:{type:'null',description:'Obsolete v1 field; appearance belongs to each view.'}

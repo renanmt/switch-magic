@@ -3,7 +3,7 @@
 local owner, assignments = ...
 assert(type(owner) == 'string' and owner:match('^[%w%-]+$'), 'Invalid Switch Magic owner')
 assert(type(assignments) == 'table', 'Missing shortcut assignments')
-local scopes = {workspace=true, monitor=true, all=true, spaces=true}
+local scopes = {workspace=true, monitor=true, all=true, spaces=true, app=true}
 local modifierKeys = {
     ALT = {'Alt_L', 'Alt_R', 64, 108},
     CTRL = {'Control_L', 'Control_R', 37, 105},

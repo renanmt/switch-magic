@@ -26,6 +26,11 @@
       "view": "grid",
       "preview": "hybrid",
       "shortcut": "ALT + SUPER + TAB"
+    },
+    "app": {
+      "view": "carousel",
+      "preview": "live",
+      "shortcut": "ALT + GRAVE"
     }
   },
   "views": [

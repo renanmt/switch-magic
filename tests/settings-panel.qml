@@ -42,6 +42,15 @@ FloatingWindow {
                 window.check(!panel.draft.behavior.showLogo, "Logo toggle must update settings");
                 panel.tab = "views";
                 events.wait(20);
+                panel.selectedScope = "app";
+                events.wait(20);
+                var appChoice = events.findChild(window.child("scopeShortcut"), "propertyChoice");
+                window.check(appChoice.displayText === "Alt + `", "App scope must display its backtick shortcut");
+                panel.selectView("list");
+                window.child("scopeShortcut").requested("Ctrl + `");
+                events.wait(350);
+                window.check(window.savedConfig.profiles.app.view === "list" && window.savedConfig.profiles.app.shortcut === "CTRL + GRAVE", "App layout and custom shortcut must autosave");
+                panel.selectedScope = "workspace";
                 window.child("scopeShortcut").requested("Ctrl + Win + K");
                 window.check(panel.draft.profiles.workspace.shortcut === "CTRL + SUPER + K", "Custom shortcut must normalize and apply");
                 var before = JSON.stringify(panel.draft);

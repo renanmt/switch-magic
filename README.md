@@ -21,7 +21,7 @@
 
 Switch Magic keeps your windows in sight while you hold **Alt**, including above fullscreen apps. Browse the previews, release Alt, and the selected window takes focus.
 
-- **Four scopes.** Switch windows on the current workspace or monitor, browse every window, or open a workspace-first overview.
+- **Five scopes.** Switch windows on the current workspace or monitor, browse every window, open a workspace-first overview, or cycle through the current app's windows.
 - **Four built-in views.** List, Grid, Carousel, and Hand of cards.
 - **Your own style.** Duplicate a view and tune its geometry, typography, borders, shadows, and motion.
 - **Your choice of previews.** Live windows, snapshots, icons, or live capture for the selected card only.
@@ -57,7 +57,7 @@ New installations never edit your Hyprland configuration files. Upgrading from t
 
 </details>
 
-## One gesture, four scopes
+## One gesture, five scopes
 
 | Shortcut | Windows to browse | Default view | Default previews |
 | :--- | :--- | :--- | :--- |
@@ -65,6 +65,13 @@ New installations never edit your Hyprland configuration files. Upgrading from t
 | **Shift + Alt + Tab** | Every workspace on the focused monitor | Hand of cards | Snapshot |
 | **Ctrl + Alt + Tab** | Every workspace on every monitor | Grid | Live selection |
 | **Alt + Super + Tab** | Workspaces on the focused monitor | Grid | Live selection |
+| **Alt + &#96;** | Current app windows across all workspaces and monitors | Carousel | Live |
+
+Hold **Alt** and press **`** (backtick) to browse windows with the same app ID/window class
+as the focused window. Press backtick again to cycle; release Alt to switch.
+The app is fixed when the picker opens. Hidden and unmapped windows are excluded;
+special workspaces follow the **includeSpecial** setting. With no focused app,
+the list is empty.
 
 In **Views**, select a scope and use the shortcut dropdown on the right. It offers the available shortcuts,
 **Unassigned**, and **Custom…**. For a custom chord, enter modifiers and a key
@@ -115,7 +122,7 @@ A focused, vertical list with small previews and room for window titles. List an
 
 ### Choose views and shortcuts
 
-Open **Views** and select Workspace, Monitor, Everywhere, or Spaces. Choose a layout and preview mode below, and set that scope’s keyboard shortcut with the dropdown on the right. Select **Custom…** to enter your own chord, or **Unassigned** to disable its shortcut. Conflicting assignments ask before moving the shortcut.
+Open **Views** and select Workspace, Monitor, Everywhere, Spaces, or App. Choose a layout and preview mode below, and set that scope’s keyboard shortcut with the dropdown on the right. Select **Custom…** to enter your own chord, or **Unassigned** to disable its shortcut. Conflicting assignments ask before moving the shortcut.
 
 ![Views settings with a shortcut selector, background blur at 20%, Display logo, and per-scope previews](docs/images/views.png)
 

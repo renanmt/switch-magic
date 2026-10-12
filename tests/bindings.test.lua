@@ -33,6 +33,7 @@ hl = {
 local defaults = {
   {'ALT + TAB', 'workspace'}, {'ALT + SHIFT + TAB', 'monitor'},
   {'CTRL + ALT + TAB', 'all'}, {'ALT + SUPER + TAB', 'spaces'},
+  {'ALT + GRAVE', 'app'},
 }
 local function attach(owner, assignments) assert(loadfile('runtime/bindings.lua'))(owner, assignments or defaults) end
 local function state() return _G.__switch_magic_runtime_v1 end
@@ -56,11 +57,17 @@ first.layerOpened.callback({namespace='switch-magic'})
 assert(currentSubmap=='switch-magic-picker')
 press('switch-magic-picker:ALT + SUPER + TAB')
 assert(dispatched[#dispatched]=='switch-magic:spaces' and first.hold=='ALT')
+press('switch-magic-picker:ALT + GRAVE')
+assert(dispatched[#dispatched]=='switch-magic:app' and first.hold=='ALT')
+press('switch-magic-picker:ALT + GRAVE')
+assert(dispatched[#dispatched]=='switch-magic:app')
 first.layerClosed.callback({namespace='other'})
 assert(currentSubmap=='switch-magic-picker')
 first.layerClosed.callback({namespace='switch-magic'})
 assert(currentSubmap=='user-mode')
 currentSubmap=''
+press('ALT + GRAVE')
+release(64); assert(dispatched[#dispatched]=='switch-magic:commit')
 press('ALT + TAB')
 release(64); assert(dispatched[#dispatched]=='switch-magic:commit')
 press('ALT + SHIFT + TAB')
