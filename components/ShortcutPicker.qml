@@ -31,11 +31,11 @@ Item {
     Row {
         visible: root.customEditing
         y: 54; width: parent.width; spacing: 10
-        TextField {
+        KeyboardTextField {
             id: input
             objectName: "customShortcutInput"
             width: parent.width - apply.width - 10; height: 38
-            text: root.customText; onTextEdited: root.customText = text
+            value: root.customText; onTextEdited: root.customText = text
             placeholderText: "Example: Ctrl + Super + K"
             maximumLength: 80; selectByMouse: true
             color: root.themeColors.text; placeholderTextColor: root.themeColors.muted

@@ -331,7 +331,7 @@ Rectangle {
             id: copyForm
             objectName: "duplicateViewForm"
             visible: root.creating; width: parent.width; height: 62; radius: 12; color: Qt.alpha(root.themeColors.accent, .08); border.width: 1; border.color: Qt.alpha(root.themeColors.accent, .25)
-            TextField { id: copyInput; x: 12; y: 12; width: parent.width - 232; height: 38; text: root.copyName; onTextEdited: root.copyName = text; placeholderText: "Name your new view"; font.family: root.fontFamily; font.pixelSize: 12; color: root.themeColors.text; maximumLength: 60; selectByMouse: true; onAccepted: root.createView(); background: Rectangle { color: Qt.alpha(root.themeColors.text, .04); radius: 7; border.width: 1; border.color: Qt.alpha(root.themeColors.text, .16) } }
+            KeyboardTextField { id: copyInput; objectName: "copyViewInput"; x: 12; y: 12; width: parent.width - 232; height: 38; value: root.copyName; onTextEdited: root.copyName = text; placeholderText: "Name your new view"; font.family: root.fontFamily; font.pixelSize: 12; color: root.themeColors.text; maximumLength: 60; selectByMouse: true; onAccepted: root.createView(); background: Rectangle { color: Qt.alpha(root.themeColors.text, .04); radius: 7; border.width: 1; border.color: Qt.alpha(root.themeColors.text, .16) } }
             MagicButton { x: parent.width - 206; y: 12; width: 92; height: 38; text: "Create"; chosen: true; accent: root.themeColors.accent; foreground: root.themeColors.text; onClicked: root.createView() }
             MagicButton { x: parent.width - 104; y: 12; width: 92; height: 38; text: "Cancel"; accent: root.themeColors.accent; foreground: root.themeColors.text; onClicked: root.creating = false }
         }
@@ -352,7 +352,7 @@ Rectangle {
                         Text { visible: root.locked; width: parent.width; wrapMode: Text.Wrap; text: "Duplicate this template to make it yours. The original always stays intact."; color: root.themeColors.muted; font.family: root.fontFamily; font.pixelSize: 11 }
                         Row {
                             visible: !root.locked; width: parent.width; spacing: 8
-                            TextField { width: parent.width - 95; height: 36; text: root.renameText; onTextEdited: root.editName(text); onEditingFinished: root.flushChanges(); color: root.themeColors.text; font.family: root.fontFamily; font.pixelSize: 12; maximumLength: 60; selectByMouse: true; onAccepted: root.flushChanges(); background: Rectangle { radius: 7; color: Qt.alpha(root.themeColors.text, .045); border.width: 1; border.color: Qt.alpha(root.themeColors.text, .13) } }
+                            KeyboardTextField { objectName: "renameViewInput"; width: parent.width - 95; height: 36; value: root.renameText; onTextEdited: root.editName(text); onEditingFinished: root.flushChanges(); color: root.themeColors.text; font.family: root.fontFamily; font.pixelSize: 12; maximumLength: 60; selectByMouse: true; onAccepted: root.flushChanges(); background: Rectangle { radius: 7; color: Qt.alpha(root.themeColors.text, .045); border.width: 1; border.color: Qt.alpha(root.themeColors.text, .13) } }
                             MagicButton { width: 87; height: 36; text: "Delete…"; accent: root.themeColors.accent; foreground: root.themeColors.text; onClicked: root.requestDeletion() }
                         }
 

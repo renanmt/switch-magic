@@ -1,5 +1,58 @@
 # Validation
 
+## Version 0.5.1 — settings clipboard hardening
+
+Addresses the clipboard finding in marketplace [issue #11243](https://github.com/omacom/omarchy-plugin-marketplace/issues/11243).
+The existing 0.5.0 review target `f73cbe2f4d7b904038282217e9cb67f6549ff59a`
+does not contain this change; publication requires review of a new exact commit.
+
+### Mechanism and scope
+
+All settings fields now use `KeyboardTextField`, whose native `TextField` stays
+`readOnly: true` throughout its lifetime. Bounded key-event text is edited in QML;
+editing never temporarily makes the native control writable. This covers custom
+shortcuts, duplication and rename fields, and every numeric, font and color field
+in `PropertyEditor`, including hidden/disabled controls.
+
+Qt 6.12.0's [`q_canPasteChanged`](https://github.com/qt/qtdeclarative/blob/v6.12.0/src/quick/items/qquicktextinput.cpp#L3001)
+skips clipboard access for read-only inputs. Its native `paste()` and middle-click
+paste paths also check read-only state. By contrast, editable inputs call
+`mimeData->text()` on clipboard changes; the
+[Wayland reader](https://github.com/qt/qtbase/blob/v6.12.0/src/plugins/platforms/wayland/qwaylanddataoffer.cpp#L250)
+has no cumulative byte limit or overall deadline. Hiding fields or setting their
+`maximumLength` alone would not prevent that read.
+
+Paste and input-method composition are intentionally unavailable. Keyboard entry,
+native navigation/selection and copy, custom cut and bounded undo/redo, numeric
+validation, and existing save behavior remain available. A tooltip and README
+describe keyboard-only entry. No new processes, clipboard tools or dependencies
+are added to the runtime. The C++ probe is test-only.
+
+### Evidence and limits
+
+- Full `python scripts/check.py` passes: 21 model tests, Lua lifecycle tests,
+  offscreen workspace/settings tests, the clipboard probe, six installer tests,
+  six migration tests, manifest validation, JSON checks and QML parsing.
+- `tests/clipboard.test.py` runs against installed Qt 6.11.2 with the offscreen
+  backend. A lazy `QMimeData` counts retrieval requests. An editable native field
+  first produces a read, proving the probe detects the problematic behavior.
+  The replacement produces zero reads on creation with existing clipboard data,
+  subsequent clipboard changes while hidden/disabled/unfocused/focused, Ctrl+V,
+  Shift+Insert, middle-click, and direct invocation of native `paste()`.
+- Settings tests inspect native inputs on initial load and across all six studio
+  groups, including hidden fields, asserting read-only state and bounded lengths.
+  Keyboard tests exercise custom shortcut submission, view creation/rename,
+  numeric validation and rollback, font/color saving, selection replacement,
+  length limits, undo/redo, deletion, surrogate pairs, external value updates and
+  disabled paste after editing.
+- Qt 6.12.0 was inspected at source level; it has not been run locally. The
+  offscreen probe does not reproduce a streaming Wayland offer or test primary
+  selection transport. It verifies that no clipboard text retrieval is requested
+  through the exercised paths. No live shell denial-of-service test was performed.
+- This addresses Switch Magic's fields, not editable controls in other shell
+  plugins or the underlying Qt implementation. Marketplace approval remains a
+  maintainer decision.
+
 ## Version 0.5.0
 
 - Full `python scripts/check.py` passes with 21 model tests, Lua lifecycle tests,

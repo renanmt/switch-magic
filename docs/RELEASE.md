@@ -1,19 +1,23 @@
-# Switch Magic 0.5.0 — Switch within an app
+# Switch Magic 0.5.1 — Settings clipboard hardening
 
-Browse only the focused app's windows across workspaces and monitors with the new
-**App** scope. Its shortcut starts **Unassigned** so it does not take over an
-existing desktop binding. Choose a chord under **Views → App** to enable it.
+Addresses the settings clipboard finding in marketplace
+[issue #11243](https://github.com/omacom/omarchy-plugin-marketplace/issues/11243).
+Qt can automatically read foreign clipboard text when an editable field exists,
+even without pasting or focusing that field. A streaming offer can block the
+shared shell or exhaust its memory.
 
-- New **App** scope alongside Workspace, Monitor, Everywhere and Spaces.
-- Independent layout, preview mode and shortcut under **Views → App**, defaulting
-  to Carousel with live previews.
-- The originating app stays fixed while the picker is open. Windows match its
-  app ID/window class and use the existing recent-window ordering and visibility filters.
-- Custom shortcuts accept a literal backtick as well as the `GRAVE` key name.
-- Alt+backtick is an opt-in preset: hold Alt and press backtick to cycle, then
-  release Alt to switch.
-- New installations, upgrades and reset leave App unassigned. Existing settings
-  gain the new profile automatically, and user-saved App shortcuts are preserved.
+All settings fields now keep the native Qt input read-only and process bounded
+keyboard edits separately. This covers custom shortcuts, view names, numbers,
+fonts and colors, including hidden controls.
+
+- Typing, selection, copy/cut, undo/redo, validation and saving remain supported.
+- **Paste and input-method composition are unavailable** in settings fields.
+- No new runtime dependencies, subprocesses or clipboard tools are introduced.
+- Existing shortcuts, preferences and custom views are retained.
+
+Also includes 0.5.0's App scope for switching among the focused app's windows
+across workspaces and monitors. Its shortcut starts **Unassigned**; choose
+Alt+backtick or another chord under **Views → App** to enable it.
 
 Install:
 
@@ -28,13 +32,17 @@ omarchy plugin update renanmt.switch-magic
 ```
 
 Open preferences with **F2** in the picker or `omarchy-shell switch-magic settings`.
-Saved preferences and custom views are retained. No manual setup is required.
-Disable or uninstall restores saved desktop shortcuts.
+No manual setup is required. Disable or uninstall restores saved desktop shortcuts.
 
-Validation: 21 model tests, Lua shortcut lifecycle tests, offscreen settings and
-workspace-card tests, 6 installer tests, 6 migration tests, manifest validation,
-JSON checks and QML parsing. Live activation confirmed the new profile and
-Alt+grave bindings with no plugin or Hyprland configuration errors. Physical
-input and end-to-end focus switching remain a manual check.
+Validation: the full `python scripts/check.py` suite passes, including 21 model
+tests, Lua lifecycle tests, offscreen settings and workspace-card tests, a new
+clipboard retrieval probe, six installer tests, six migration tests, manifest
+validation, JSON checks and QML parsing. The clipboard probe on installed Qt
+6.11.2 observes reads from an editable native positive control and zero reads
+from the replacement during creation, clipboard changes and paste attempts.
+Qt 6.12.0 was inspected at source level, not executed locally. No live streaming
+clipboard denial-of-service test was performed. See
+[validation notes](https://github.com/renanmt/switch-magic/blob/v0.5.1/docs/VALIDATION.md)
+for scope and limitations.
 
 Marketplace verification is requested separately for the exact release commit.

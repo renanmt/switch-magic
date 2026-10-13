@@ -21,7 +21,11 @@
 
 Switch Magic keeps your windows in sight while you hold **Alt**, including above fullscreen apps. Browse the previews, release Alt, and the selected window takes focus.
 
-**New in 0.5.0:** browse only the focused app's windows, across workspaces and
+**New in 0.5.1:** settings fields avoid automatic clipboard reads. They support
+keyboard editing; paste and input-method composition are unavailable. See the
+[changelog](CHANGELOG.md).
+
+**Also included from 0.5.0:** browse only the focused app's windows, across workspaces and
 monitors. App starts with no shortcut assigned; choose one under **Views → App**,
 along with its layout and previews. See the [changelog](CHANGELOG.md).
 
@@ -158,6 +162,11 @@ Use **Display logo** to show or hide the picker logo and wordmark.
 behavior after confirmation. Your custom views and their styling are kept.
 
 Custom views can be renamed or deleted with confirmation. Deleting an assigned view returns its shortcuts to the corresponding built-in template.
+
+Settings text fields use keyboard entry only. Typing, selection, copy/cut and
+undo/redo are supported; paste and input-method composition are unavailable.
+This prevents Qt from automatically reading clipboard contents while settings
+are open. Numeric sliders and shortcut dropdowns remain available.
 
 ### Pick how much to preview
 

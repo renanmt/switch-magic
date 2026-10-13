@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "renanmt.switch-magic",
   "name": "Switch Magic",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "author": "Renan Tonheiro (@renanmt)",
   "description": "A visual workspace and window switcher with customizable shortcuts, layouts, and live previews.",
   "kinds": [

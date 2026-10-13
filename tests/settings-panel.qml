@@ -19,7 +19,20 @@ FloatingWindow {
         onSave: function(next) { window.savedConfig = next; saveCompleted(true); }
     }
     TestCase { id: events; when: false }
+    KeyboardTextField { id: keyboardProbe; visible: false; width: 240; height: 40; maximumLength: 5 }
     function check(condition, message) { if (!condition) throw new Error(message); }
+    function typeText(input, text) {
+        input.forceActiveFocus();
+        events.keyClick(Qt.Key_A, Qt.ControlModifier);
+        for (var letter of text) events.keyClick(letter);
+    }
+    function checkClipboardFields(item) {
+        if (item.readOnly !== undefined) {
+            check(item.readOnly && !item.canPaste, "All native text inputs must stay read-only: " + item.objectName);
+            check(item.maximumLength <= 80, "Text input length must be bounded");
+        }
+        if (item.children) for (var child of item.children) checkClipboardFields(child);
+    }
     function visualFind(item, name) {
         if (item.objectName === name) return item;
         if (item.children) for (var child of item.children) {
@@ -33,6 +46,7 @@ FloatingWindow {
         onTriggered: {
             try {
                 window.check(!panel.validation.length, "Initial settings must be valid");
+                window.checkClipboardFields(panel);
                 var blur = window.child("backgroundBlurSlider");
                 events.mouseClick(blur, blur.width - 1, blur.height / 2);
                 window.check(panel.draft.behavior.backgroundBlur === 100, "Blur slider must save its percentage");
@@ -47,6 +61,11 @@ FloatingWindow {
                 var appChoice = events.findChild(window.child("scopeShortcut"), "propertyChoice");
                 window.check(appChoice.displayText === "Unassigned", "App scope must start without a shortcut");
                 window.check(appChoice.model.indexOf("Alt + `") >= 0, "Alt+backtick must remain an opt-in choice");
+                var customIndex = appChoice.model.indexOf("Custom…");
+                appChoice.currentIndex = customIndex; appChoice.activated(customIndex);
+                window.typeText(window.child("customShortcutInput"), "Ctrl + Super + J");
+                events.keyClick(Qt.Key_Return);
+                window.check(panel.draft.profiles.app.shortcut === "CTRL + SUPER + J", "Typed custom shortcut must apply on Enter");
                 panel.selectView("list");
                 window.child("scopeShortcut").requested("Ctrl + `");
                 events.wait(350);
@@ -106,6 +125,58 @@ FloatingWindow {
                 events.wait(20);
                 window.check(!preview.visible, "Narrow panel must use the inline preview");
                 panel.width = 1100; panel.height = 850; preview.contentY = 0;
+                window.typeText(window.child("copyViewInput"), "Keyboard view");
+                events.keyClick(Qt.Key_Return);
+                window.check(panel.editingView.name === "Keyboard view" && !panel.creating, "Typed name must create a custom view");
+                window.typeText(window.child("renameViewInput"), "Renamed view");
+                events.keyClick(Qt.Key_Return);
+                window.check(panel.editingView.name === "Renamed view", "Typed rename must save");
+                var widthInput = window.child("propertyInput_geometry.cardWidth");
+                window.typeText(widthInput, "333");
+                events.keyClick(Qt.Key_Return);
+                window.check(panel.editingView.geometry.cardWidth === 333, "Typed numeric value must save");
+                window.typeText(widthInput, "9999");
+                panel.forceActiveFocus();
+                window.check(widthInput.text === "333", "Invalid numeric value must restore saved value on blur");
+                for (var group = 0; group < 6; group++) {
+                    panel.editorGroup = group; events.wait(10);
+                    window.checkClipboardFields(panel);
+                }
+                panel.editorGroup = 2;
+                events.wait(10);
+                window.typeText(window.child("propertyInput_card.fontFamily"), "monospace");
+                panel.forceActiveFocus();
+                window.check(panel.editingView.card.fontFamily === "monospace", "Font name must save on blur");
+                panel.editorGroup = 5;
+                events.wait(10);
+                window.typeText(window.child("propertyInput_scene.accent"), "#123456");
+                events.keyClick(Qt.Key_Return);
+                window.check(panel.editingView.scene.accent === "#123456", "Color must save on Enter");
+
+                keyboardProbe.visible = true;
+                window.typeText(keyboardProbe, "abcdef");
+                window.check(keyboardProbe.text === "abcde", "Typing must respect maximumLength");
+                events.keyClick(Qt.Key_Z, Qt.ControlModifier);
+                window.check(keyboardProbe.text === "abcd", "Undo must restore preceding edit");
+                events.keyClick(Qt.Key_Y, Qt.ControlModifier);
+                window.check(keyboardProbe.text === "abcde", "Redo must restore edit");
+                events.keyClick(Qt.Key_Home);
+                events.keyClick(Qt.Key_Right, Qt.ShiftModifier);
+                events.keyClick("Z");
+                window.check(keyboardProbe.text === "Zbcde", "Typing must replace keyboard selection at length limit");
+                events.keyClick(Qt.Key_Delete);
+                events.keyClick(Qt.Key_Backspace);
+                window.check(keyboardProbe.text === "cde", "Delete and Backspace must edit at cursor");
+                keyboardProbe.value = "new";
+                window.check(keyboardProbe.text === "new", "External values must update previously edited field");
+                keyboardProbe.value = "A😀B";
+                keyboardProbe.cursorPosition = 3;
+                events.keyClick(Qt.Key_Backspace);
+                window.check(keyboardProbe.text === "AB", "Backspace must not split surrogate pairs");
+                events.keyClick(Qt.Key_V, Qt.ControlModifier);
+                events.keyClick(Qt.Key_Insert, Qt.ShiftModifier);
+                window.check(keyboardProbe.text === "AB" && keyboardProbe.readOnly, "Paste must remain disabled after editing");
+                keyboardProbe.visible = false;
                 window.check(panel.prepareClose(), "Valid settings must flush when closing");
                 console.log("SETTINGS_PANEL_TESTS_PASSED");
                 var capture = Quickshell.env("SWITCH_MAGIC_TEST_CAPTURE");

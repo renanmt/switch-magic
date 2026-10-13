@@ -1,6 +1,6 @@
 {
   "name": "switch-magic",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "private": true,
   "description": "A visual workspace and window switcher with customizable shortcuts, layouts, and live previews.",
   "scripts": {

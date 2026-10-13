@@ -19,4 +19,4 @@ with tempfile.TemporaryDirectory(prefix='switch-magic-settings-') as tmp:
     output = result.stdout + result.stderr
     if result.returncode or 'SETTINGS_PANEL_TESTS_PASSED' not in output or 'WARN scene:' in output:
         raise SystemExit(output)
-    print('Settings: branding, custom shortcuts, conflict confirmation, autosave, reset and studio scrolling passed.')
+    print('Settings: clipboard-safe fields, keyboard editing, validation, shortcuts, autosave, reset and studio scrolling passed.')

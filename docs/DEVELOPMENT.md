@@ -6,6 +6,10 @@ python scripts/check.py
 npm test
 ```
 
+The full suite also needs `g++`, `pkg-config` and the Qt 6 Quick/Test development
+headers. `tests/clipboard.test.py` compiles a small probe in a temporary directory
+and forces Qt's offscreen backend, so it never accesses the desktop clipboard.
+
 The project separates pure selection/layout logic (`lib/Model.js`), capture
 cards (`components/WindowCard.qml`), preferences UI, the Omarchy service
 (`SwitchMagic.qml`), and a small compositor key-release bridge (`runtime/bindings.lua`).

@@ -46,9 +46,10 @@ Item {
     }
     Component {
         id: textControl
-        TextField {
+        KeyboardTextField {
             id: edit
-            text: String(root.value); placeholderText: root.field.hint || ""
+            objectName: "propertyInput_" + root.field.path
+            value: String(root.value); placeholderText: root.field.hint || ""
             font.family: root.fontFamily; font.pixelSize: 12
             color: root.themeColors.text; placeholderTextColor: root.themeColors.muted
             selectionColor: Qt.alpha(root.themeColors.accent, .35)
@@ -71,10 +72,12 @@ Item {
                 handle: Rectangle { x: slider.leftPadding + slider.visualPosition * (slider.availableWidth - width); y: slider.topPadding + slider.availableHeight / 2 - 6; width: 12; height: 12; radius: 6; color: root.themeColors.accent }
                 Accessible.name: root.field.label
             }
-            TextField {
+            KeyboardTextField {
                 id: number
+                objectName: "propertyInput_" + root.field.path
+                numeric: true; maximumLength: 16
                 anchors.right: parent.right; width: 76; height: parent.height
-                text: root.format(root.value)
+                value: root.format(root.value)
                 font.family: root.fontFamily; font.pixelSize: 11; horizontalAlignment: Text.AlignRight
                 color: root.themeColors.text; selectByMouse: true
                 validator: DoubleValidator { bottom: root.field.min; top: root.field.max; decimals: root.field.step < 1 ? 2 : 0; locale: "C" }

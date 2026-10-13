@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.1 — 2026-10-13
+
+- Prevent settings fields from automatically reading foreign clipboard text by keeping native inputs read-only and handling bounded keyboard edits separately.
+- Apply the protection to custom shortcuts, view names, numeric values, fonts and colors, including hidden controls.
+- Preserve typing, selection, copy/cut, undo/redo, validation and saving. Paste and input-method composition are unavailable in these keyboard-only fields.
+- Add an offscreen clipboard retrieval probe with an editable native field as a positive control, plus settings keyboard regression tests.
+
 ## 0.5.0 — 2026-10-12
 
 - Add an App scope for windows matching the focused app across workspaces and monitors, with no shortcut assigned by default.
