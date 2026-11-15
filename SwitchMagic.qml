@@ -23,7 +23,11 @@ Item {
     property int selected: 0
     property var context: ({})
     property var focusOrder: []
-    property string pendingFocus: ""
+    property string focusProgram: ""
+    FileView {
+        path: Qt.resolvedUrl("runtime/focus.lua")
+        onLoaded: root.focusProgram = text()
+    }
     property var displayScreen: null
     property var defaults: ({})
     property var config: ({})
@@ -86,6 +90,9 @@ Item {
         }
     }
     function saveSettings(next) {
+        // QML var signals wrap nested arrays as QVariant lists. Restore native
+        // JavaScript arrays before applying the shared model validation.
+        next = Model.clone(next);
         var errors = Model.validate(next, defaults, Fields.groups);
         if (errors.length) { configError = errors.join("; "); return false; }
         next = Model.normalize(defaults, Model.persisted(next));
@@ -188,18 +195,7 @@ Item {
         close();
         if (exists && /^(0x)?[0-9a-fA-F]+$/.test(address)) {
             var full = address.indexOf("0x") === 0 ? address : "0x" + address;
-            pendingFocus = full;
-            focusAfterUnmap.restart();
-        }
-    }
-    Timer {
-        id: focusAfterUnmap
-        interval: 35
-        onTriggered: {
-            // Let the exclusive layer unmap before requesting window focus.
-            // Otherwise Hyprland can restore the old focus after our request.
-            Quickshell.execDetached(["hyprctl", "dispatch", 'hl.dsp.focus({ window = "address:' + root.pendingFocus + '" })']);
-            root.pendingFocus = "";
+            Quickshell.execDetached(["hyprctl", "eval", "assert(load(" + JSON.stringify(focusProgram) + "))(" + JSON.stringify(full) + ")"]);
         }
     }
     function reconcile() {

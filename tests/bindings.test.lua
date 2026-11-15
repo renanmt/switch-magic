@@ -9,9 +9,9 @@ hl = {
   define_submap = function(name, callback) definingSubmap=name; callback(); definingSubmap="" end,
   unbind = function(chord) binds[chord] = nil end,
   bind = function(chord, action, opts)
-    local b = {enabled=true, action=action}
-    function b:is_enabled() return self.enabled end
-    function b:set_enabled(value) self.enabled=value end
+    local b = setmetatable({enabled=true, action=action}, {__tostring=function(self) return self.expired and "HL.Keybind(expired)" or "HL.Keybind" end})
+    function b:is_enabled() assert(not self.expired); return self.enabled end
+    function b:set_enabled(value) assert(not self.expired); self.enabled=value end
     binds[definingSubmap == "" and chord or definingSubmap..":"..chord]=b; return b
   end,
   on = function(name, callback)
@@ -108,3 +108,12 @@ hl.bind=function() error('simulated failure') end
 assert(not pcall(attach,'broken')); assert(state()==nil and reloads==2)
 hl.bind=oldbind
 print('Runtime shortcuts: custom routes, modifiers, aliases, renewal, ownership, reload, expiry and rollback passed.')
+
+attach('expired-test')
+local expired = state()
+expired.binds[1].expired = true
+assert(not expired:valid(), 'expired handles must be checked without calling methods')
+attach('expired-test')
+assert(state() ~= expired and not expired.active, 'reinstall after a chord is unbound')
+state().navigationBinds[1].expired = true
+state():stop(false)
