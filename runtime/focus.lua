@@ -18,6 +18,9 @@ timer = hl.timer(function()
     if _G[slot] == timer then _G[slot] = nil end
     if not mapped and hl.get_window('address:' .. address) then
         hl.dispatch(hl.dsp.focus({window = 'address:' .. address}))
+        -- Focusing a floating window does not raise it above overlapping
+        -- windows. Match Omarchy's own Alt+Tab reveal behavior.
+        hl.dispatch(hl.dsp.window.bring_to_top())
     end
 end, {timeout = 10, type = 'repeat'})
 _G[slot] = timer

@@ -23,6 +23,7 @@ Item {
     property int selected: 0
     property var context: ({})
     property var focusOrder: []
+    property string lastFocusRequest: ""
     property string focusProgram: ""
     FileView {
         path: Qt.resolvedUrl("runtime/focus.lua")
@@ -194,6 +195,7 @@ Item {
         var exists = Hyprland.toplevels.values.some(function(w) { return w.address === address; });
         close();
         if (exists && /^(0x)?[0-9a-fA-F]+$/.test(address)) {
+            root.lastFocusRequest = address;
             var full = address.indexOf("0x") === 0 ? address : "0x" + address;
             Quickshell.execDetached(["hyprctl", "eval", "assert(load(" + JSON.stringify(focusProgram) + "))(" + JSON.stringify(full) + ")"]);
         }
@@ -264,7 +266,7 @@ Item {
         function cancel(): string { root.close(); return "ok"; }
         function settings(): string { root.settings(); return "ok"; }
         function preview(layout: string): string { return root.preview(layout); }
-        function state(): string { return JSON.stringify({ opened: root.opened, editing: root.editing, scope: root.scope, layout: root.layoutName, view: root.viewId, preview: root.captureMode, count: root.rows.length, selected: root.selected, addresses: root.scope === "spaces" ? [] : root.rows.map(function(w) { return w.address; }), workspaces: root.scope === "spaces" ? root.rows.map(function(w) { return w.name; }) : [], error: root.bindingError || root.configError }); }
+        function state(): string { return JSON.stringify({ opened: root.opened, editing: root.editing, scope: root.scope, layout: root.layoutName, view: root.viewId, preview: root.captureMode, count: root.rows.length, selected: root.selected, addresses: root.scope === "spaces" ? [] : root.rows.map(function(w) { return w.address; }), workspaces: root.scope === "spaces" ? root.rows.map(function(w) { return w.name; }) : [], error: root.bindingError || root.configError, lastFocusRequest: root.lastFocusRequest, focusProgramLoaded: !!root.focusProgram }); }
         function configuration(): string { return JSON.stringify(Model.persisted(root.config)); }
         function configure(json: string): string {
             try { var next = Model.merge(root.config, JSON.parse(json)); return root.saveSettings(next) ? "ok" : root.configError; }

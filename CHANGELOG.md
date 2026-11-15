@@ -4,6 +4,7 @@
 
 - Restore native JavaScript arrays at the QML save boundary so valid settings no longer fail with “Invalid settings structure”.
 - Offer discard or cancel when unsaved settings prevent closing preferences.
+- Raise the selected window after focusing so overlapping floating windows cannot hide it.
 - Wait for the compositor to unmap the picker before focusing the selected window, replacing the fixed delay. Cancel superseded requests and skip windows that have closed.
 - Recover shortcut ownership without calling methods on expired Hyprland keybind handles.
 - Add regression coverage for the host save boundary, failed-save dismissal, focus handoff and expired bindings.

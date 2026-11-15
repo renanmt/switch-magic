@@ -1,5 +1,6 @@
 local mapped, exists, focused = true, true, nil
 local timers = {}
+local raised = false
 hl = {
     timer = function(callback)
         local timer = {callback=callback, enabled=true}
@@ -9,15 +10,20 @@ hl = {
     end,
     get_layers = function() return {{namespace='switch-magic', mapped=mapped}} end,
     get_window = function(selector) assert(selector=='address:0x123'); return exists end,
-    dsp = {focus=function(spec) return spec.window end},
-    dispatch = function(target) focused=target end,
+    dsp = {focus=function(spec) return spec.window end, window={bring_to_top=function() return "raise" end}},
+    dispatch = function(target)
+        if target == "raise" then
+            assert(focused == "address:0x123", "focus the selected window before raising")
+            raised = true
+        else focused=target end
+    end,
 }
 local function start() assert(loadfile('runtime/focus.lua'))('0x123'); return timers[#timers] end
 local first=start()
 for _=1,10 do first.callback() end
 assert(not focused and first.enabled, 'wait through slow unmapping')
 mapped=false; first.callback()
-assert(focused=='address:0x123' and not first.enabled)
+assert(focused=='address:0x123' and raised and not first.enabled)
 focused=nil; exists=false
 start().callback(); assert(not focused, 'closed windows must not be focused')
 exists=true; mapped=true
