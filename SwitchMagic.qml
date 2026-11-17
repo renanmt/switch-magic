@@ -144,7 +144,9 @@ Item {
             var activeWindow = active ? allWindows().find(function(w) { return w.address === active.address; }) : null;
             // Keep the originating app even after the picker takes keyboard focus
             // or the user changes scopes while holding the shortcut modifier.
-            context = { monitorId: monitor ? monitor.id : -1, workspaceId: workspace ? workspace.id : -1,
+            var monitorId = monitor ? monitor.id : -1;
+            context = { monitorId: monitorId,
+                workspaceId: Model.currentWorkspaceId(workspace ? workspace.id : -1, activeWindow, monitorId),
                 appId: activeWindow ? activeWindow.appId : "" };
             displayScreen = screenForFocus();
             desktopBackdrop.prepare(displayScreen, config.behavior.backgroundBlur > 0);
