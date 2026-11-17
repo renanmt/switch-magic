@@ -89,8 +89,12 @@ omarchy-shell switch-magic configure '{"profiles":{"workspace":{"view":"fan"}}}'
 omarchy-shell switch-magic configuration
 ```
 
-The active special workspace remains reachable in workspace scope, and pinned
-windows are included on their monitor. The `spaces` profile opens the workspace
+When the focused window is on a special workspace on the focused monitor,
+workspace scope lists that special workspace's windows, including scratchpad
+and Quake-console windows. If an empty special workspace leaves focus on the
+underlying workspace, that workspace's windows are listed instead. Monitor,
+all-windows and App scopes still follow `includeSpecial`. Pinned windows are
+included on their monitor. The `spaces` profile opens the workspace
 overview on the focused monitor; selecting a card activates that workspace.
 Previews preserve aspect ratio.
 List/grid paginate to keep the window list manageable.

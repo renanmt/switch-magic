@@ -21,9 +21,12 @@
 
 Switch Magic keeps your windows in sight while you hold **Alt**, including above fullscreen apps. Browse the previews, release Alt, and the selected window takes focus.
 
-**New in 0.5.1:** settings fields avoid automatic clipboard reads. They support
-keyboard editing; paste and input-method composition are unavailable. See the
-[changelog](CHANGELOG.md).
+**New in 0.5.2:** reliable settings saves, window focus and raising, and switching
+within scratchpads and other special workspaces. Reopening the picker cancels
+any pending focus from the previous selection. See the [changelog](CHANGELOG.md).
+
+Settings fields retain 0.5.1's clipboard protection: keyboard editing is supported;
+paste and input-method composition are unavailable.
 
 **Also included from 0.5.0:** browse only the focused app's windows, across workspaces and
 monitors. App starts with no shortcut assigned; choose one under **Views → App**,

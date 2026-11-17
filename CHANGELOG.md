@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.5.2 — 2026-11-17
 
 - Restore native JavaScript arrays at the QML save boundary so valid settings no longer fail with “Invalid settings structure”.
 - Offer discard or cancel when unsaved settings prevent closing preferences.
@@ -8,7 +8,12 @@
 - Wait for the compositor to unmap the picker before focusing the selected window, replacing the fixed delay. Cancel superseded requests and skip windows that have closed.
 - Invalidate pending focus when a new picker session opens, so cancelling it or selecting a workspace cannot activate an earlier window selection.
 - Recover shortcut ownership without calling methods on expired Hyprland keybind handles.
+- Use the focused special workspace for current-workspace switching, so scratchpad and Quake-console windows appear instead of the windows behind them. An empty special workspace falls back to the underlying workspace.
 - Add regression coverage for the host save boundary, failed-save dismissal, focus handoff and expired bindings.
+- Cover special-workspace selection and pending-focus cancellation when the picker reopens.
+
+Thanks to @devmil for [PR #2](https://github.com/renanmt/switch-magic/pull/2) and
+@arthurpolice for [PR #3](https://github.com/renanmt/switch-magic/pull/3).
 
 ## 0.5.1 — 2026-10-13
 

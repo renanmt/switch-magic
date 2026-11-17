@@ -18,14 +18,22 @@ _No response_
 
 Switch Magic is a visual workspace and window switcher with four built-in layouts,
 live or snapshot previews, configurable shortcuts, and a custom view editor. Permanent plugin ID:
-`renanmt.switch-magic`. Version: `0.5.1`.
+`renanmt.switch-magic`. Version: `0.5.2`.
 
-Version 0.5.1 addresses the settings clipboard finding from marketplace #11243.
+Version 0.5.2 fixes settings saves through QML signals, adds Discard/Cancel when
+unsaved changes prevent closing preferences, and improves window switching.
+Selected windows are raised after focus; the compositor waits for the picker to
+unmap and cancels a pending selection if the picker reopens. Expired shortcut
+handles are guarded. Workspace scope now includes the focused scratchpad or
+other special workspace; empty special workspaces fall back to the workspace
+behind them. Existing shortcut assignments and custom views are preserved.
+
+The release retains 0.5.1's fix for the settings clipboard finding from marketplace #11243.
 All settings fields keep their native Qt input read-only and process bounded
 keyboard edits separately, preventing automatic clipboard text reads. Paste
 and input-method composition are unavailable; typing, selection, copy/cut,
 undo/redo, validation and saving remain supported. The offscreen clipboard
-probe and full test suite pass. See docs/VALIDATION.md for evidence and limits.
+probe on Qt 6.12.0 and the full test suite pass. See docs/VALIDATION.md for evidence and limits.
 
 The release also includes the 0.5.0 App scope for windows matching the focused app across
 workspaces and monitors, with its own view and shortcut settings. It starts
