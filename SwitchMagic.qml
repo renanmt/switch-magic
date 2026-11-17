@@ -23,7 +23,6 @@ Item {
     property int selected: 0
     property var context: ({})
     property var focusOrder: []
-    property var specialByMonitor: ({})
     property string pendingFocus: ""
     property var displayScreen: null
     property var defaults: ({})
@@ -137,11 +136,9 @@ Item {
             var activeWindow = active ? allWindows().find(function(w) { return w.address === active.address; }) : null;
             // Keep the originating app even after the picker takes keyboard focus
             // or the user changes scopes while holding the shortcut modifier.
-            var special = monitor ? root.specialByMonitor[monitor.name] : undefined;
-            if (special === undefined && monitor && monitor.lastIpcObject && monitor.lastIpcObject.specialWorkspace) special = monitor.lastIpcObject.specialWorkspace.id;
             var monitorId = monitor ? monitor.id : -1;
             context = { monitorId: monitorId,
-                workspaceId: Model.currentWorkspaceId(workspace ? workspace.id : -1, special, activeWindow, monitorId),
+                workspaceId: Model.currentWorkspaceId(workspace ? workspace.id : -1, activeWindow, monitorId),
                 appId: activeWindow ? activeWindow.appId : "" };
             displayScreen = screenForFocus();
             desktopBackdrop.prepare(displayScreen, config.behavior.backgroundBlur > 0);
@@ -248,10 +245,6 @@ Item {
         }
         function onRawEvent(event) {
             if (event.name === "closewindow") Qt.callLater(root.reconcile);
-            if (event.name === "activespecialv2") {
-                var shown = Model.parseActiveSpecial(event.data);
-                if (shown) { var next = Model.clone(root.specialByMonitor); next[shown.monitor] = shown.id; root.specialByMonitor = next; }
-            }
             if (event.name === "monitorremoved") root.close();
         }
     }
