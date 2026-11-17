@@ -4,7 +4,7 @@
   "private": true,
   "description": "A visual workspace and window switcher with customizable shortcuts, layouts, and live previews.",
   "scripts": {
-    "test": "node tests/model.test.cjs && lua tests/bindings.test.lua",
+    "test": "node tests/model.test.cjs && lua tests/bindings.test.lua && lua tests/focus.test.lua",
     "check": "python scripts/check.py"
   },
   "author": "Renan Tonheiro (@renanmt)"

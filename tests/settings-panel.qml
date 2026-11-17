@@ -3,6 +3,7 @@ import QtTest
 import Quickshell
 import "Fixtures.js" as Fixtures
 import "lib/Model.js" as Model
+import "lib/ViewFields.js" as Fields
 import "components"
 
 FloatingWindow {
@@ -16,7 +17,7 @@ FloatingWindow {
         config: Model.duplicate(Fixtures.defaults, "list", "My list").config
         defaults: Fixtures.defaults
         themeColors: ({surface: "#080c20", text: "#ffd0b0", muted: "#7c87ae", accent: "#9691ec"})
-        onSave: function(next) { window.savedConfig = next; saveCompleted(true); }
+        onSave: function(next) { window.check(Fixtures.saveSettings(next), "Host must accept settings passed through a QML signal: " + Fixtures.configError); window.savedConfig = Model.clone(next); saveCompleted(true); }
     }
     TestCase { id: events; when: false }
     KeyboardTextField { id: keyboardProbe; visible: false; width: 240; height: 40; maximumLength: 5 }
@@ -178,6 +179,18 @@ FloatingWindow {
                 window.check(keyboardProbe.text === "AB" && keyboardProbe.readOnly, "Paste must remain disabled after editing");
                 keyboardProbe.visible = false;
                 window.check(panel.prepareClose(), "Valid settings must flush when closing");
+                var invalid = Model.clone(panel.draft);
+                invalid.views = null;
+                panel.setDraft(invalid);
+                window.check(!panel.prepareClose(), "Invalid edits must offer a close decision");
+                var unsaved = window.child("unsavedChangesDialog");
+                window.check(unsaved.visible, "Failed saves must offer discard");
+                unsaved.reject();
+                window.check(panel.dirty, "Cancel must preserve unsaved edits");
+                unsaved.open();
+                unsaved.discarded();
+                unsaved.close();
+                window.check(!panel.dirty && panel.prepareClose(), "Discard must allow closing");
                 console.log("SETTINGS_PANEL_TESTS_PASSED");
                 var capture = Quickshell.env("SWITCH_MAGIC_TEST_CAPTURE");
                 if (capture) {

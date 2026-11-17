@@ -23,7 +23,12 @@ Item {
     property int selected: 0
     property var context: ({})
     property var focusOrder: []
-    property string pendingFocus: ""
+    property string lastFocusRequest: ""
+    property string focusProgram: ""
+    FileView {
+        path: Qt.resolvedUrl("runtime/focus.lua")
+        onLoaded: root.focusProgram = text()
+    }
     property var displayScreen: null
     property var defaults: ({})
     property var config: ({})
@@ -86,6 +91,9 @@ Item {
         }
     }
     function saveSettings(next) {
+        // QML var signals wrap nested arrays as QVariant lists. Restore native
+        // JavaScript arrays before applying the shared model validation.
+        next = Model.clone(next);
         var errors = Model.validate(next, defaults, Fields.groups);
         if (errors.length) { configError = errors.join("; "); return false; }
         next = Model.normalize(defaults, Model.persisted(next));
@@ -187,19 +195,9 @@ Item {
         var exists = Hyprland.toplevels.values.some(function(w) { return w.address === address; });
         close();
         if (exists && /^(0x)?[0-9a-fA-F]+$/.test(address)) {
+            root.lastFocusRequest = address;
             var full = address.indexOf("0x") === 0 ? address : "0x" + address;
-            pendingFocus = full;
-            focusAfterUnmap.restart();
-        }
-    }
-    Timer {
-        id: focusAfterUnmap
-        interval: 35
-        onTriggered: {
-            // Let the exclusive layer unmap before requesting window focus.
-            // Otherwise Hyprland can restore the old focus after our request.
-            Quickshell.execDetached(["hyprctl", "dispatch", 'hl.dsp.focus({ window = "address:' + root.pendingFocus + '" })']);
-            root.pendingFocus = "";
+            Quickshell.execDetached(["hyprctl", "eval", "assert(load(" + JSON.stringify(focusProgram) + "))(" + JSON.stringify(full) + ")"]);
         }
     }
     function reconcile() {
@@ -268,7 +266,7 @@ Item {
         function cancel(): string { root.close(); return "ok"; }
         function settings(): string { root.settings(); return "ok"; }
         function preview(layout: string): string { return root.preview(layout); }
-        function state(): string { return JSON.stringify({ opened: root.opened, editing: root.editing, scope: root.scope, layout: root.layoutName, view: root.viewId, preview: root.captureMode, count: root.rows.length, selected: root.selected, addresses: root.scope === "spaces" ? [] : root.rows.map(function(w) { return w.address; }), workspaces: root.scope === "spaces" ? root.rows.map(function(w) { return w.name; }) : [], error: root.bindingError || root.configError }); }
+        function state(): string { return JSON.stringify({ opened: root.opened, editing: root.editing, scope: root.scope, layout: root.layoutName, view: root.viewId, preview: root.captureMode, count: root.rows.length, selected: root.selected, addresses: root.scope === "spaces" ? [] : root.rows.map(function(w) { return w.address; }), workspaces: root.scope === "spaces" ? root.rows.map(function(w) { return w.name; }) : [], error: root.bindingError || root.configError, lastFocusRequest: root.lastFocusRequest, focusProgramLoaded: !!root.focusProgram }); }
         function configuration(): string { return JSON.stringify(Model.persisted(root.config)); }
         function configure(json: string): string {
             try { var next = Model.merge(root.config, JSON.parse(json)); return root.saveSettings(next) ? "ok" : root.configError; }

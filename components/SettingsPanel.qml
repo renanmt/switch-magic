@@ -51,8 +51,25 @@ Rectangle {
     function prepareClose() {
         forceActiveFocus(); // Commit any focused numeric or font field first.
         flushChanges();
+        if (dirty) closeDialog.open();
         return !dirty;
     }
+    Dialog {
+        id: closeDialog
+        objectName: "unsavedChangesDialog"
+        parent: Overlay.overlay
+        anchors.centerIn: parent
+        modal: true
+        title: "Unsaved changes"
+        standardButtons: Dialog.Discard | Dialog.Cancel
+        onDiscarded: {
+            root.autoSaveStop();
+            root.dirty = false;
+            root.dismiss();
+        }
+        Label { text: "Settings could not be saved. Discard changes and close?" }
+    }
+    function autoSaveStop() { autoSave.stop(); retrySave.stop(); }
     Timer { id: autoSave; interval: 300; onTriggered: root.flushChanges() }
     Timer { id: retrySave; interval: 3000; onTriggered: root.flushChanges() }
     function selectView(id) { var next = Model.clone(draft); next.profiles[selectedScope].view = id; setDraft(next); }

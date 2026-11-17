@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+- Restore native JavaScript arrays at the QML save boundary so valid settings no longer fail with “Invalid settings structure”.
+- Offer discard or cancel when unsaved settings prevent closing preferences.
+- Raise the selected window after focusing so overlapping floating windows cannot hide it.
+- Wait for the compositor to unmap the picker before focusing the selected window, replacing the fixed delay. Cancel superseded requests and skip windows that have closed.
+- Invalidate pending focus when a new picker session opens, so cancelling it or selecting a workspace cannot activate an earlier window selection.
+- Recover shortcut ownership without calling methods on expired Hyprland keybind handles.
+- Add regression coverage for the host save boundary, failed-save dismissal, focus handoff and expired bindings.
+
 ## 0.5.1 — 2026-10-13
 
 - Prevent settings fields from automatically reading foreign clipboard text by keeping native inputs read-only and handling bounded keyboard edits separately.
