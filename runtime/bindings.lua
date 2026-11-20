@@ -31,8 +31,10 @@ _G[slot] = state
 -- Any client's hl.unbind() of a chord expires our handle for it, and
 -- Hyprland 0.56 dereferences an expired handle in every method except
 -- tostring(), crashing the compositor. Check before every method call.
+-- Drop alive() once the minimum supported Hyprland is 0.57, which checks
+-- expiry itself.
 local function alive(bind)
-    return bind ~= nil and tostring(bind) ~= 'HL.Keybind(expired)'
+    return tostring(bind) ~= 'HL.Keybind(expired)'
 end
 function state:valid()
     if not self.active or #self.binds ~= #assignments then return false end
