@@ -2,16 +2,28 @@ local binds, timers, reloads, events, dispatched = {}, {}, 0, {}, {}
 local down = {}
 local currentSubmap, definingSubmap = "", ""
 local layers = {}
+local function normalize(chord) return (chord:gsub(' ', ''):lower()) end
+local keybindMeta = {__tostring = function(b) return b.expired and 'HL.Keybind(expired)' or 'HL.Keybind(0x1)' end}
 hl = {
   dsp = { global = function(name) return name end, submap = function(name) return {submap=name} end },
   get_current_submap = function() return currentSubmap end,
   get_layers = function() return layers end,
   define_submap = function(name, callback) definingSubmap=name; callback(); definingSubmap="" end,
-  unbind = function(chord) binds[chord] = nil end,
+  -- Like Hyprland, unbind matches the normalized chord in every submap, and
+  -- the removed bind's Lua handle expires. Hyprland 0.56 crashes on any method
+  -- of an expired handle; only tostring() is safe.
+  unbind = function(chord)
+    for name, b in pairs(binds) do
+      if normalize(name:gsub('^[%w%-]+:', '')) == normalize(chord) then
+        binds[name] = nil
+        if type(b) == 'table' then b.expired = true end
+      end
+    end
+  end,
   bind = function(chord, action, opts)
-    local b = {enabled=true, action=action}
-    function b:is_enabled() return self.enabled end
-    function b:set_enabled(value) self.enabled=value end
+    local b = setmetatable({enabled=true, action=action}, keybindMeta)
+    function b:is_enabled() assert(not self.expired, 'is_enabled() on an expired keybind crashes Hyprland'); return self.enabled end
+    function b:set_enabled(value) assert(not self.expired, 'set_enabled() on an expired keybind crashes Hyprland'); self.enabled=value end
     binds[definingSubmap == "" and chord or definingSubmap..":"..chord]=b; return b
   end,
   on = function(name, callback)
@@ -107,4 +119,24 @@ local oldbind=hl.bind
 hl.bind=function() error('simulated failure') end
 assert(not pcall(attach,'broken')); assert(state()==nil and reloads==2)
 hl.bind=oldbind
-print('Runtime shortcuts: custom routes, modifiers, aliases, renewal, ownership, reload, expiry and rollback passed.')
+-- Another client (e.g. hyprshell claiming Alt+Tab over IPC) unbinds a chord
+-- while the runtime is live. No path may call a method on the expired handle.
+attach('third'); local claimed=state()
+hl.unbind('alt + Tab')
+assert(tostring(claimed.binds[1])=='HL.Keybind(expired)' and tostring(claimed.navigationBinds[1])=='HL.Keybind(expired)')
+assert(not claimed:valid(), 'an expired shortcut needs reinstalling')
+-- The 2 s refresh reinstalls and takes the chord back.
+attach('third'); assert(state()~=claimed and not claimed.active)
+assert(binds['ALT + TAB'].enabled and binds['switch-magic-picker:ALT + TAB'].enabled)
+press('ALT + TAB'); assert(dispatched[#dispatched]=='switch-magic:workspace')
+-- Watchdog expiry with an expired handle.
+local leased=state(); local reloadsBefore=reloads
+hl.unbind('ALT + SHIFT + TAB')
+for i=1,8 do leased.watchdog.callback() end
+assert(not leased.active and state()==nil and reloads==reloadsBefore+1)
+for _, bind in ipairs(leased.binds) do assert(bind.expired or not bind.enabled) end
+-- Detach with an expired handle.
+attach('third'); local detached=state()
+hl.unbind('CTRL + ALT + TAB')
+detached:stop(true); assert(not detached.active and state()==nil and reloads==reloadsBefore+2)
+print('Runtime shortcuts: custom routes, modifiers, aliases, renewal, ownership, reload, expiry, rollback and foreign unbinds passed.')

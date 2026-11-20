@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.2 — Unreleased
+
+- Fix a Hyprland 0.56 compositor crash shortly after login, when another client such as hyprshell unbinds a Switch Magic chord (for example Alt+Tab) over IPC. Hyprland 0.56 dereferences a Lua keybind handle whose bind was removed, so the runtime now checks each handle with `tostring()` before calling `is_enabled()` or `set_enabled()` on it. Hyprland 0.57 fixes the underlying bug.
+- An unbound shortcut now counts as invalid, so the next refresh reinstalls it instead of crashing.
+- The binding test mock now matches Hyprland's unbind semantics: chords match after normalization in every submap, handles expire, and calling a method on an expired handle fails.
+
 ## 0.5.1 — 2026-10-13
 
 - Prevent settings fields from automatically reading foreign clipboard text by keeping native inputs read-only and handling bounded keyboard edits separately.

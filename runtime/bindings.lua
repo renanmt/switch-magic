@@ -28,13 +28,18 @@ if prior then prior:stop(false) end
 local pickerSubmap = "switch-magic-picker"
 local state = { navigationBinds = {}, actions = {}, owner = owner, signature = signature, remaining = 8, binds = {}, active = true }
 _G[slot] = state
+-- Any client's hl.unbind() of a chord expires our handle for it, and
+-- Hyprland 0.56 dereferences an expired handle in every method except
+-- tostring(), crashing the compositor. Check before every method call.
+local function alive(bind)
+    return bind ~= nil and tostring(bind) ~= 'HL.Keybind(expired)'
+end
 function state:valid()
     if not self.active or #self.binds ~= #assignments then return false end
-    for _, bind in ipairs(self.binds) do
-        if bind:is_enabled() ~= true then return false end
-    end
-    for _, bind in ipairs(self.navigationBinds) do
-        if bind:is_enabled() ~= true then return false end
+    for _, list in ipairs({self.binds, self.navigationBinds}) do
+        for _, bind in ipairs(list) do
+            if not alive(bind) or bind:is_enabled() ~= true then return false end
+        end
     end
     return true
 end
@@ -46,8 +51,11 @@ function state:stop(restore)
     if self.layerOpened then self.layerOpened:remove() end
     if self.layerClosed then self.layerClosed:remove() end
     self:leavePicker()
-    for _, bind in ipairs(self.navigationBinds) do bind:set_enabled(false) end
-    for _, bind in ipairs(self.binds) do bind:set_enabled(false) end
+    for _, list in ipairs({self.navigationBinds, self.binds}) do
+        for _, bind in ipairs(list) do
+            if alive(bind) then bind:set_enabled(false) end
+        end
+    end
     if _G[slot] == self then _G[slot] = nil end
     if restore then hl.exec_cmd('hyprctl reload config-only') end
 end
