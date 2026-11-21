@@ -1,5 +1,40 @@
 # Validation
 
+## Unreleased — picker client identity
+
+Addresses the namespace-spoofing finding in marketplace
+[issue #15240](https://github.com/omacom/omarchy-plugin-marketplace/issues/15240#issuecomment-7053890340).
+Both Lua programs now require the hosting Quickshell process ID and match it
+against the compositor-reported layer PID in addition to the namespace. This
+covers layer-open and layer-close handlers, initial shortcut attachment, and
+the focus timer's mapped-layer scan. Shortcut renewal includes the process ID
+in its ownership check.
+
+The regression tests fail on 0.5.2 when another client using the same namespace
+changes the global submap or cancels pending focus. They pass with the fix,
+including foreign and missing PIDs, already-mapped foreign layers, genuine
+picker reopen/cancel behavior, unrelated layers in the same process, and
+replacement of a lease when the shell process changes. Invalid PID arguments
+are rejected before runtime state is changed.
+
+The full `python scripts/check.py` suite passes on 2026-11-21. An isolated
+command-boundary probe also executed the actual QML `refresh()` and `commit()`
+functions with mocked host objects, then evaluated their generated commands
+against the real Lua programs and test fixtures. Both commands supplied the
+shell PID; foreign layer events were ignored and genuine events were honored.
+
+API evidence: Hyprland [0.56.2's Lua layer object](https://github.com/hyprwm/Hyprland/blob/v0.56.2/src/config/lua/objects/LuaLayerSurface.cpp)
+exposes `pid` through `CLayerSurface::getPID()`, whose
+[implementation](https://github.com/hyprwm/Hyprland/blob/v0.56.2/src/desktop/view/LayerSurface.cpp#L427-L436)
+uses `wl_client_get_credentials`. Quickshell
+[0.3.0 documents `processId`](https://quickshell.org/docs/v0.3.0/types/Quickshell/Quickshell/#prop.processId)
+as its process ID. The fix does not increase the supported minimum versions.
+
+The tests simulate compositor events and credentials; no hostile client was
+launched against the user's live desktop. This identifies separate Wayland
+client processes; it does not isolate plugins within the same Quickshell process
+or restrict clients already able to execute arbitrary compositor IPC.
+
 ## Version 0.5.2 — settings and window switching fixes
 
 Validated on 2026-11-17 with the full `python scripts/check.py` suite:

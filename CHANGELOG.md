@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Require the Quickshell process ID as well as the layer namespace before changing picker submaps, waiting for unmapping, or cancelling pending focus. Other layer-shell clients using the same namespace are ignored.
+- Add regression coverage for foreign and missing client identities, startup layer discovery, and shortcut renewal after a process change.
+
 ## 0.5.2 — 2026-11-17
 
 - Restore native JavaScript arrays at the QML save boundary so valid settings no longer fail with “Invalid settings structure”.

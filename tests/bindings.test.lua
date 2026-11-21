@@ -2,6 +2,7 @@ local binds, timers, reloads, events, dispatched = {}, {}, 0, {}, {}
 local down = {}
 local currentSubmap, definingSubmap = "", ""
 local layers = {}
+local shellPid = 1234
 hl = {
   dsp = { global = function(name) return name end, submap = function(name) return {submap=name} end },
   get_current_submap = function() return currentSubmap end,
@@ -35,7 +36,7 @@ local defaults = {
   {'CTRL + ALT + TAB', 'all'}, {'ALT + SUPER + TAB', 'spaces'},
   {'ALT + GRAVE', 'app'},
 }
-local function attach(owner, assignments) assert(loadfile('runtime/bindings.lua'))(owner, assignments or defaults) end
+local function attach(owner, assignments, pid) assert(loadfile('runtime/bindings.lua'))(owner, assignments or defaults, pid or shellPid) end
 local function state() return _G.__switch_magic_runtime_v1 end
 local function press(chord) binds[chord].action() end
 local function release(key) state().keys.callback(key,nil,0); timers[#timers].callback() end
@@ -52,8 +53,12 @@ first.remaining=1; attach('first'); assert(first==state() and first.remaining==8
 -- Only the picker layer temporarily owns keyboard routing.
 first.layerOpened.callback({namespace='other'})
 assert(currentSubmap=='')
+for _, layer in ipairs({{namespace='switch-magic', pid=9999}, {namespace='switch-magic'}, {namespace='switch-magic', pid=-1}, {namespace='other', pid=shellPid}}) do
+  first.layerOpened.callback(layer)
+  assert(currentSubmap=='', 'only the shell process may enter the picker submap')
+end
 currentSubmap='user-mode'
-first.layerOpened.callback({namespace='switch-magic'})
+first.layerOpened.callback({namespace='switch-magic', pid=shellPid})
 assert(currentSubmap=='switch-magic-picker')
 press('switch-magic-picker:ALT + SUPER + TAB')
 assert(dispatched[#dispatched]=='switch-magic:spaces' and first.hold=='ALT')
@@ -63,7 +68,11 @@ press('switch-magic-picker:ALT + GRAVE')
 assert(dispatched[#dispatched]=='switch-magic:app')
 first.layerClosed.callback({namespace='other'})
 assert(currentSubmap=='switch-magic-picker')
-first.layerClosed.callback({namespace='switch-magic'})
+for _, layer in ipairs({{namespace='switch-magic', pid=9999}, {namespace='switch-magic'}, {namespace='switch-magic', pid=-1}}) do
+  first.layerClosed.callback(layer)
+  assert(currentSubmap=='switch-magic-picker', 'foreign or unknown clients must not leave the picker submap')
+end
+first.layerClosed.callback({namespace='switch-magic', pid=shellPid})
 assert(currentSubmap=='user-mode')
 currentSubmap=''
 press('ALT + GRAVE')
@@ -96,7 +105,7 @@ attach('second',{{'SHIFT + F6','monitor'}})
 press('SHIFT + F6'); release(50); assert(dispatched[#dispatched]=='switch-magic:commit')
 attach('second',{}); assert(state():valid() and #state().binds==0)
 attach('second')
-local live=state(); live.layerOpened.callback({namespace='switch-magic'}); for i=1,7 do live.watchdog.callback() end
+local live=state(); live.layerOpened.callback({namespace='switch-magic', pid=shellPid}); for i=1,7 do live.watchdog.callback() end
 assert(reloads==0); attach('second'); assert(live.remaining==8)
 for i=1,8 do live.watchdog.callback() end
 assert(reloads==1 and state()==nil and not live.active and currentSubmap=='')
@@ -117,3 +126,21 @@ attach('expired-test')
 assert(state() ~= expired and not expired.active, 'reinstall after a chord is unbound')
 state().navigationBinds[1].expired = true
 state():stop(false)
+
+-- Reattachment must not adopt an already-mapped layer owned by another client.
+layers={{namespace='switch-magic', pid=9999, mapped=true}, {namespace='switch-magic', mapped=true}}
+attach('startup')
+assert(currentSubmap=='', 'startup discovery must reject foreign and unknown clients')
+state():stop(false)
+layers[#layers+1]={namespace='switch-magic', pid=shellPid, mapped=true}
+attach('startup')
+assert(currentSubmap=='switch-magic-picker', 'startup discovery must adopt the real picker')
+local oldProcess=state()
+attach('startup', nil, shellPid+1)
+assert(state()~=oldProcess and not oldProcess.active and currentSubmap=='', 'renewal must not retain a different process identity')
+state():stop(false)
+for _, pid in ipairs({0, -1, 1.5, '1234', math.huge}) do
+  assert(not pcall(attach, 'invalid-pid', nil, pid), 'reject invalid shell process IDs')
+end
+assert(not pcall(function() assert(loadfile('runtime/bindings.lua'))('missing-pid', defaults) end))
+print('Picker bindings: process identity, foreign events, startup discovery and renewal passed.')

@@ -1,7 +1,12 @@
 -- Layer unmapping is asynchronous. Wait for the compositor to release the
 -- picker's exclusive keyboard focus instead of guessing a frame delay.
-local address = ...
+local address, shellPid = ...
 assert(type(address) == 'string' and address:match('^0x%x+$'), 'Invalid window address')
+assert(type(shellPid) == 'number' and shellPid > 0 and shellPid % 1 == 0, 'Invalid shell process ID')
+-- Namespace is client-supplied; pid comes from Wayland client credentials.
+local function isPicker(layer)
+    return layer.namespace == 'switch-magic' and layer.pid == shellPid
+end
 local slot = '__switch_magic_focus_v1'
 local previous = _G[slot]
 if previous then previous:stop() end
@@ -17,7 +22,7 @@ _G[slot] = request
 -- with Escape, settings dismissal or a workspace selection rather than a
 -- second window request. Cancel here, where the pending timer is owned.
 request.opened = hl.on('layer.opened', function(layer)
-    if layer.namespace == 'switch-magic' then request:stop() end
+    if isPicker(layer) then request:stop() end
 end)
 local attempts = 0
 request.timer = hl.timer(function()
@@ -25,7 +30,7 @@ request.timer = hl.timer(function()
     attempts = attempts + 1
     local mapped = false
     for _, layer in ipairs(hl.get_layers()) do
-        if layer.namespace == 'switch-magic' and layer.mapped then mapped = true; break end
+        if isPicker(layer) and layer.mapped then mapped = true; break end
     end
     if mapped and attempts < 100 then return end
     request:stop()
