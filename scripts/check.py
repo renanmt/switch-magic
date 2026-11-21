@@ -8,6 +8,7 @@ for path in ROOT.glob('*.json'):
     json.loads(path.read_text())
 subprocess.run(['node', 'tests/model.test.cjs'], cwd=ROOT, check=True)
 subprocess.run(['lua', 'tests/bindings.test.lua'], cwd=ROOT, check=True)
+subprocess.run(['lua', 'tests/focus.test.lua'], cwd=ROOT, check=True)
 subprocess.run(['python', 'tests/space-card.test.py'], cwd=ROOT, check=True)
 subprocess.run(['python', 'tests/settings-panel.test.py'], cwd=ROOT, check=True)
 subprocess.run(['python', 'tests/clipboard.test.py'], cwd=ROOT, check=True)

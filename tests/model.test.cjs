@@ -17,6 +17,15 @@ test('active special workspace and pinned windows remain reachable', () => {
     assert.deepEqual(M.selectWindows(windows,'workspace',{workspaceId:-1,monitorId:0},false).map(w=>w.address), ['d']);
     assert.equal(M.selectWindows([win('pin',9,0,0,{pinned:true})],'workspace',{workspaceId:1,monitorId:0},false).length,1);
 });
+test('the focused window on an open special workspace such as the scratchpad sets the current workspace', () => {
+    const scratch = win('s', -98, 0, 0, {special:true});
+    assert.equal(M.currentWorkspaceId(1, scratch, 0), -98);
+    assert.equal(M.currentWorkspaceId(1, scratch, 1), 1);
+    assert.equal(M.currentWorkspaceId(1, win('a', 1, 0, 0), 0), 1);
+    assert.equal(M.currentWorkspaceId(1, null, 0), 1);
+    const ctx = {workspaceId:M.currentWorkspaceId(1, scratch, 0), monitorId:0};
+    assert.deepEqual(M.selectWindows([win('a', 1, 0, 1), scratch],'workspace',ctx,false).map(w=>w.address), ['s']);
+});
 test('app scope matches only the originating app across workspaces and monitors in MRU order', () => {
     const items = [
         win('active', 1, 0, 0, {appId:'editor'}),

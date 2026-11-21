@@ -1,23 +1,26 @@
-# Switch Magic 0.5.1 — Settings clipboard hardening
+# Switch Magic 0.5.2 — Settings and window switching fixes
 
-Addresses the settings clipboard finding in marketplace
-[issue #11243](https://github.com/omacom/omarchy-plugin-marketplace/issues/11243).
-Qt can automatically read foreign clipboard text when an editable field exists,
-even without pasting or focusing that field. A streaming offer can block the
-shared shell or exhaust its memory.
+This patch release fixes settings saves and improves window switching, including
+scratchpads and other special workspaces.
 
-All settings fields now keep the native Qt input read-only and process bounded
-keyboard edits separately. This covers custom shortcuts, view names, numbers,
-fonts and colors, including hidden controls.
+- **Settings save correctly:** valid edits no longer fail with “Invalid settings
+  structure” when QML converts nested arrays. If changes cannot be saved, closing
+  preferences offers Discard or Cancel.
+- **Selected windows come forward:** switching focuses and raises the selected
+  window, including when floating windows overlap it.
+- **Focus waits for the picker:** the compositor waits for the picker to unmap,
+  skips closed windows and replaces pending selections. Reopening the picker
+  invalidates the old pending selection, including when the new session ends
+  with Escape or a workspace selection.
+- **Scratchpad switching works:** current-workspace scope uses the focused
+  special workspace on the focused monitor, including scratchpad and Quake-console
+  windows. An empty special workspace falls back to the underlying workspace.
+- **Shortcut recovery is safer:** expired Hyprland keybind handles are checked
+  before renewal or cleanup calls.
 
-- Typing, selection, copy/cut, undo/redo, validation and saving remain supported.
-- **Paste and input-method composition are unavailable** in settings fields.
-- No new runtime dependencies, subprocesses or clipboard tools are introduced.
-- Existing shortcuts, preferences and custom views are retained.
-
-Also includes 0.5.0's App scope for switching among the focused app's windows
-across workspaces and monitors. Its shortcut starts **Unassigned**; choose
-Alt+backtick or another chord under **Views → App** to enable it.
+Existing preferences, custom views and shortcuts are preserved. The App shortcut
+remains opt-in. Settings retain 0.5.1's clipboard protection: keyboard editing is
+supported, while paste and input-method composition remain unavailable.
 
 Install:
 
@@ -32,17 +35,20 @@ omarchy plugin update renanmt.switch-magic
 ```
 
 Open preferences with **F2** in the picker or `omarchy-shell switch-magic settings`.
-No manual setup is required. Disable or uninstall restores saved desktop shortcuts.
+No manual configuration migration is needed.
 
-Validation: the full `python scripts/check.py` suite passes, including 21 model
-tests, Lua lifecycle tests, offscreen settings and workspace-card tests, a new
-clipboard retrieval probe, six installer tests, six migration tests, manifest
-validation, JSON checks and QML parsing. The clipboard probe on installed Qt
-6.11.2 observes reads from an editable native positive control and zero reads
-from the replacement during creation, clipboard changes and paste attempts.
-Qt 6.12.0 was inspected at source level, not executed locally. No live streaming
-clipboard denial-of-service test was performed. See
-[validation notes](https://github.com/renanmt/switch-magic/blob/v0.5.1/docs/VALIDATION.md)
-for scope and limitations.
+The full `python scripts/check.py` suite passes: 22 model tests, Lua shortcut and
+focus tests, offscreen settings and workspace-card tests, the Qt 6.12.0 clipboard
+probe, six installer tests, six migration tests, manifest validation, JSON checks
+and QML parsing. Focus invalidation is covered by deterministic compositor mocks;
+live desktop checks were reported by the PR authors and were not independently
+repeated for this release candidate. See the
+[validation notes](https://github.com/renanmt/switch-magic/blob/v0.5.2/docs/VALIDATION.md)
+for details.
 
-Marketplace verification is requested separately for the exact release commit.
+Thanks to [@devmil](https://github.com/devmil) for
+[PR #2](https://github.com/renanmt/switch-magic/pull/2) and
+[@arthurpolice](https://github.com/arthurpolice) for
+[PR #3](https://github.com/renanmt/switch-magic/pull/3).
+
+[Full changelog](https://github.com/renanmt/switch-magic/compare/v0.5.1...v0.5.2)

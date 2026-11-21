@@ -1,5 +1,39 @@
 # Validation
 
+## Version 0.5.2 — settings and window switching fixes
+
+Validated on 2026-11-17 with the full `python scripts/check.py` suite:
+
+- 22 model tests, including focused special-workspace selection, monitor
+  matching, fallback behavior and integration with workspace filtering.
+- Lua shortcut lifecycle tests, including expired keybind handles.
+- Lua focus tests covering delayed unmapping, focus before raising, closed
+  windows, replacement requests and timeout. New regression cases cover
+  reopening then cancelling, switching to a workspace, unrelated layers,
+  callbacks already queued before cancellation, and event-listener cleanup.
+  The reopen/cancel regression failed before the invalidation fix and passes
+  with it.
+- Offscreen settings tests exercise the actual host save function through a
+  QML signal, plus Discard/Cancel after a failed validation. Existing keyboard,
+  shortcut, autosave, reset and studio tests continue to pass.
+- Offscreen workspace-card tests and the clipboard probe on Qt 6.12.0. The
+  editable native positive control reads clipboard text; keyboard fields
+  perform zero reads during creation, clipboard changes or paste attempts.
+- Six installer tests, six migration tests, JSON validation, Lua syntax,
+  Omarchy manifest validation and QML parsing.
+
+The focus tests simulate compositor timers and layer events; they do not replace
+live desktop validation. Contributors report live testing of focus/raising on
+Hyprland 0.56.2 in [PR #2](https://github.com/renanmt/switch-magic/pull/2) and
+scratchpad/Quake-console selection on Hyprland 0.56 with Quickshell 0.3.2 in
+[PR #3](https://github.com/renanmt/switch-magic/pull/3). Those live checks were not
+independently repeated for this release candidate. The pending-focus invalidation
+fix was verified with deterministic regression tests, not live input.
+
+An empty special workspace falls back to the underlying workspace when focus
+stays there. Monitor, all-windows and App scopes retain `includeSpecial` behavior.
+Settings retain the keyboard-only clipboard protection introduced in 0.5.1.
+
 ## Version 0.5.1 — settings clipboard hardening
 
 Addresses the clipboard finding in marketplace [issue #11243](https://github.com/omacom/omarchy-plugin-marketplace/issues/11243).

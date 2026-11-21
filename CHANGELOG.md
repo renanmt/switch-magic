@@ -1,10 +1,23 @@
 # Changelog
 
-## 0.5.2 — Unreleased
+## Unreleased
 
-- Fix a Hyprland 0.56 compositor crash shortly after login, when another client such as hyprshell unbinds a Switch Magic chord (for example Alt+Tab) over IPC. Hyprland 0.56 dereferences a Lua keybind handle whose bind was removed, so the runtime now checks each handle with `tostring()` before calling `is_enabled()` or `set_enabled()` on it. Hyprland 0.57 fixes the underlying bug.
-- An unbound shortcut now counts as invalid, so the next refresh reinstalls it instead of crashing.
-- The binding test mock now matches Hyprland's unbind semantics: chords match after normalization in every submap, handles expire, and calling a method on an expired handle fails.
+- Expand expired-keybind regression coverage to simulate foreign unbinds across desktop and picker submaps, shortcut reattachment, watchdog expiry, detach, and picker-only handle expiry. The runtime guard was already included in 0.5.2.
+
+## 0.5.2 — 2026-11-17
+
+- Restore native JavaScript arrays at the QML save boundary so valid settings no longer fail with “Invalid settings structure”.
+- Offer discard or cancel when unsaved settings prevent closing preferences.
+- Raise the selected window after focusing so overlapping floating windows cannot hide it.
+- Wait for the compositor to unmap the picker before focusing the selected window, replacing the fixed delay. Cancel superseded requests and skip windows that have closed.
+- Invalidate pending focus when a new picker session opens, so cancelling it or selecting a workspace cannot activate an earlier window selection.
+- Recover shortcut ownership without calling methods on expired Hyprland keybind handles.
+- Use the focused special workspace for current-workspace switching, so scratchpad and Quake-console windows appear instead of the windows behind them. An empty special workspace falls back to the underlying workspace.
+- Add regression coverage for the host save boundary, failed-save dismissal, focus handoff and expired bindings.
+- Cover special-workspace selection and pending-focus cancellation when the picker reopens.
+
+Thanks to @devmil for [PR #2](https://github.com/renanmt/switch-magic/pull/2) and
+@arthurpolice for [PR #3](https://github.com/renanmt/switch-magic/pull/3).
 
 ## 0.5.1 — 2026-10-13
 

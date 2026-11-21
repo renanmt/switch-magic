@@ -139,4 +139,13 @@ for _, bind in ipairs(leased.binds) do assert(bind.expired or not bind.enabled) 
 attach('third'); local detached=state()
 hl.unbind('CTRL + ALT + TAB')
 detached:stop(true); assert(not detached.active and state()==nil and reloads==reloadsBefore+2)
+-- Expiring only a picker handle must reach the navigation-list validation;
+-- the shared-chord unbind cases above return early on the desktop handle.
+attach('picker-only'); local pickerOnly=state()
+pickerOnly.navigationBinds[1].expired=true
+assert(not pickerOnly:valid(), 'an expired picker-only shortcut needs reinstalling')
+attach('picker-only')
+assert(state()~=pickerOnly and not pickerOnly.active)
+assert(binds['switch-magic-picker:ALT + TAB'].enabled)
+state():stop(false)
 print('Runtime shortcuts: custom routes, modifiers, aliases, renewal, ownership, reload, expiry, rollback and foreign unbinds passed.')
