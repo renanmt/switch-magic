@@ -199,7 +199,7 @@ Item {
         if (exists && /^(0x)?[0-9a-fA-F]+$/.test(address)) {
             root.lastFocusRequest = address;
             var full = address.indexOf("0x") === 0 ? address : "0x" + address;
-            Quickshell.execDetached(["hyprctl", "eval", "assert(load(" + JSON.stringify(focusProgram) + "))(" + JSON.stringify(full) + ")"]);
+            Quickshell.execDetached(["hyprctl", "eval", "assert(load(" + JSON.stringify(focusProgram) + "))(" + JSON.stringify(full) + "," + Quickshell.processId + ")"]);
         }
     }
     function reconcile() {

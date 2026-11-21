@@ -57,6 +57,13 @@ Disable/unload or lease expiry reloads the saved Hyprland configuration, preserv
 saved Lua callbacks without reconstructing them from `hyprctl binds` output.
 Other temporary runtime-only Hyprland changes are also reset by that reload.
 
+Picker layer events and discovery require both the `switch-magic` namespace and
+the hosting `Quickshell.processId`. QML passes that PID to both Lua programs;
+Hyprland obtains each layer's PID from Wayland client credentials. Namespace
+alone is client-supplied and must never authorize submap changes or affect a
+pending focus request. Missing or invalid process IDs are rejected, and a
+changed process ID cannot reuse an old shortcut lease.
+
 `scripts/migrate-bindings.py` removes only the exact legacy include, with a backup.
 The top-level `bindings.lua` remains a harmless compatibility stub during upgrades.
 For a development symlink, `python scripts/install.py` enables the service; it does

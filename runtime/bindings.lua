@@ -1,8 +1,9 @@
 -- Runtime-only shortcut lease. QML supplies an owner and validated assignments.
 -- No configuration is written. Detaching restores the saved Hyprland config.
-local owner, assignments = ...
+local owner, assignments, shellPid = ...
 assert(type(owner) == 'string' and owner:match('^[%w%-]+$'), 'Invalid Switch Magic owner')
 assert(type(assignments) == 'table', 'Missing shortcut assignments')
+assert(type(shellPid) == 'number' and shellPid > 0 and shellPid % 1 == 0, 'Invalid shell process ID')
 local scopes = {workspace=true, monitor=true, all=true, spaces=true, app=true}
 local modifierKeys = {
     ALT = {'Alt_L', 'Alt_R', 64, 108},
@@ -20,14 +21,18 @@ end
 signature = table.concat(signature, '|')
 local slot = '__switch_magic_runtime_v1'
 local prior = _G[slot]
-if prior and prior.owner == owner and prior.signature == signature and prior:valid() then
+if prior and prior.owner == owner and prior.shellPid == shellPid and prior.signature == signature and prior:valid() then
     prior.remaining = 8
     return
 end
 if prior then prior:stop(false) end
 local pickerSubmap = "switch-magic-picker"
-local state = { navigationBinds = {}, actions = {}, owner = owner, signature = signature, remaining = 8, binds = {}, active = true }
+local state = { navigationBinds = {}, actions = {}, owner = owner, shellPid = shellPid, signature = signature, remaining = 8, binds = {}, active = true }
 _G[slot] = state
+-- Namespace is client-supplied; pid comes from Wayland client credentials.
+local function isPicker(layer)
+    return layer.namespace == 'switch-magic' and layer.pid == shellPid
+end
 -- Any client's hl.unbind() of a chord expires our handle for it, and
 -- Hyprland 0.56 dereferences an expired handle in every method except
 -- tostring(), crashing the compositor. Check before every method call.
@@ -115,13 +120,13 @@ local ok, err = pcall(function()
         end
     end)
     state.layerOpened = hl.on('layer.opened', function(layer)
-        if layer.namespace == 'switch-magic' then state:enterPicker() end
+        if isPicker(layer) then state:enterPicker() end
     end)
     state.layerClosed = hl.on('layer.closed', function(layer)
-        if layer.namespace == 'switch-magic' then state:leavePicker() end
+        if isPicker(layer) then state:leavePicker() end
     end)
     for _, layer in ipairs(hl.get_layers()) do
-        if layer.namespace == 'switch-magic' and layer.mapped then state:enterPicker(); break end
+        if isPicker(layer) and layer.mapped then state:enterPicker(); break end
     end
     state.keys = hl.on('input.keyboard.key', function(keycode, _, value)
         local hold = state.hold

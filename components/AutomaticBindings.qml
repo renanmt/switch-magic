@@ -26,7 +26,7 @@ Item {
             return;
         }
         installingCode = bindingCode;
-        install.command = ["hyprctl", "eval", "assert(load(" + JSON.stringify(program) + "))(" + JSON.stringify(owner) + "," + installingCode + ")"];
+        install.command = ["hyprctl", "eval", "assert(load(" + JSON.stringify(program) + "))(" + JSON.stringify(owner) + "," + installingCode + "," + Quickshell.processId + ")"];
         install.running = true;
     }
     FileView {
