@@ -21,9 +21,10 @@
 
 Switch Magic keeps your windows in sight while you hold **Alt**, including above fullscreen apps. Browse the previews, release Alt, and the selected window takes focus.
 
-**New in 0.5.2:** reliable settings saves, window focus and raising, and switching
-within scratchpads and other special workspaces. Reopening the picker cancels
-any pending focus from the previous selection. See the [changelog](CHANGELOG.md).
+**New in 0.5.3:** picker identity checks prevent another layer-shell process using
+the same namespace from changing Switch Magic's keyboard routing or cancelling
+pending focus. Includes expanded shortcut lifecycle tests and all 0.5.2 settings,
+window-switching and scratchpad fixes. See the [changelog](CHANGELOG.md).
 
 Settings fields retain 0.5.1's clipboard protection: keyboard editing is supported;
 paste and input-method composition are unavailable.

@@ -1,6 +1,6 @@
 # Validation
 
-## Unreleased — picker client identity
+## Version 0.5.3 — picker client identity
 
 Addresses the namespace-spoofing finding in marketplace
 [issue #15240](https://github.com/omacom/omarchy-plugin-marketplace/issues/15240#issuecomment-7053890340).
@@ -22,6 +22,13 @@ command-boundary probe also executed the actual QML `refresh()` and `commit()`
 functions with mocked host objects, then evaluated their generated commands
 against the real Lua programs and test fixtures. Both commands supplied the
 shell PID; foreign layer events were ignored and genuine events were honored.
+
+The merged release also includes PR #4's normalized foreign-unbind mock and
+regressions for reattachment, watchdog expiry, detach and picker-only keybind
+expiry. Removing only the picker validation guard makes the picker-only test
+fail; the real runtime passes. The full suite includes 22 model tests, both Lua
+suites, offscreen QML and clipboard checks, six installer tests, six migration
+tests, manifest validation, JSON checks and QML parsing.
 
 API evidence: Hyprland [0.56.2's Lua layer object](https://github.com/hyprwm/Hyprland/blob/v0.56.2/src/config/lua/objects/LuaLayerSurface.cpp)
 exposes `pid` through `CLayerSurface::getPID()`, whose

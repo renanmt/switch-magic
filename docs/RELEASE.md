@@ -1,26 +1,22 @@
-# Switch Magic 0.5.2 — Settings and window switching fixes
+# Switch Magic 0.5.3 — Picker identity hardening
 
-This patch release fixes settings saves and improves window switching, including
-scratchpads and other special workspaces.
+This patch release addresses the layer-namespace finding from the
+[marketplace review](https://github.com/omacom/omarchy-plugin-marketplace/issues/15240#issuecomment-7053890340).
 
-- **Settings save correctly:** valid edits no longer fail with “Invalid settings
-  structure” when QML converts nested arrays. If changes cannot be saved, closing
-  preferences offers Discard or Cancel.
-- **Selected windows come forward:** switching focuses and raises the selected
-  window, including when floating windows overlap it.
-- **Focus waits for the picker:** the compositor waits for the picker to unmap,
-  skips closed windows and replaces pending selections. Reopening the picker
-  invalidates the old pending selection, including when the new session ends
-  with Escape or a workspace selection.
-- **Scratchpad switching works:** current-workspace scope uses the focused
-  special workspace on the focused monitor, including scratchpad and Quake-console
-  windows. An empty special workspace falls back to the underlying workspace.
-- **Shortcut recovery is safer:** expired Hyprland keybind handles are checked
-  before renewal or cleanup calls.
+Switch Magic now checks that picker layers belong to its hosting Quickshell
+process. Another layer-shell process using the same namespace is ignored when
+changing keyboard submaps, waiting for the picker to unmap, or cancelling pending
+focus. Invalid process IDs are rejected, and shortcut renewal cannot reuse a
+lease belonging to a different shell process.
 
-Existing preferences, custom views and shortcuts are preserved. The App shortcut
-remains opt-in. Settings retain 0.5.1's clipboard protection: keyboard editing is
-supported, while paste and input-method composition remain unavailable.
+The release also strengthens expired-keybind regression coverage for foreign
+unbinds, reattachment, watchdog expiry, detach and picker-only handle expiry.
+The runtime crash guard itself already shipped in 0.5.2.
+
+Existing preferences, views and shortcuts are preserved. There are no new runtime
+dependencies or manual configuration migrations. All 0.5.2 settings, focus and
+scratchpad fixes are included. Settings retain their keyboard-only clipboard
+protection; paste and input-method composition remain unavailable.
 
 Install:
 
@@ -34,21 +30,21 @@ Update:
 omarchy plugin update renanmt.switch-magic
 ```
 
-Open preferences with **F2** in the picker or `omarchy-shell switch-magic settings`.
-No manual configuration migration is needed.
+The full `python scripts/check.py` suite passes, including 22 model tests, Lua
+shortcut/focus regressions, offscreen QML and Qt 6.12.0 clipboard checks, installer
+and migration tests, manifest validation, JSON checks and QML parsing. An isolated
+probe also verified that the actual QML command construction supplies the PID to
+both Lua programs. Compositor events and credentials were mocked; hostile-client
+testing was not performed on the live desktop.
 
-The full `python scripts/check.py` suite passes: 22 model tests, Lua shortcut and
-focus tests, offscreen settings and workspace-card tests, the Qt 6.12.0 clipboard
-probe, six installer tests, six migration tests, manifest validation, JSON checks
-and QML parsing. Focus invalidation is covered by deterministic compositor mocks;
-live desktop checks were reported by the PR authors and were not independently
-repeated for this release candidate. See the
-[validation notes](https://github.com/renanmt/switch-magic/blob/v0.5.2/docs/VALIDATION.md)
-for details.
+The PID comes from Wayland client credentials reported by Hyprland. This
+distinguishes separate client processes; it does not isolate plugins hosted in
+the same Quickshell process or restrict arbitrary compositor IPC. See the
+[validation notes](https://github.com/renanmt/switch-magic/blob/v0.5.3/docs/VALIDATION.md).
 
-Thanks to [@devmil](https://github.com/devmil) for
-[PR #2](https://github.com/renanmt/switch-magic/pull/2) and
-[@arthurpolice](https://github.com/arthurpolice) for
-[PR #3](https://github.com/renanmt/switch-magic/pull/3).
+Thanks to [@arthurpolice](https://github.com/arthurpolice) for
+[PR #4](https://github.com/renanmt/switch-magic/pull/4) and
+[@HANCORE-linux](https://github.com/HANCORE-linux) for the marketplace review.
+The picker identity fix is in [PR #5](https://github.com/renanmt/switch-magic/pull/5).
 
-[Full changelog](https://github.com/renanmt/switch-magic/compare/v0.5.1...v0.5.2)
+[Full changelog](https://github.com/renanmt/switch-magic/compare/v0.5.2...v0.5.3)

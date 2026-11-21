@@ -18,10 +18,18 @@ _No response_
 
 Switch Magic is a visual workspace and window switcher with four built-in layouts,
 live or snapshot previews, configurable shortcuts, and a custom view editor. Permanent plugin ID:
-`renanmt.switch-magic`. Version: `0.5.2`.
+`renanmt.switch-magic`. Version: `0.5.3`.
 
-Version 0.5.2 fixes settings saves through QML signals, adds Discard/Cancel when
-unsaved changes prevent closing preferences, and improves window switching.
+Version 0.5.3 addresses the namespace-spoofing finding in marketplace #15240.
+Both Lua runtimes require the hosting Quickshell PID and match it against the
+layer PID obtained by Hyprland from Wayland client credentials, as well as the
+namespace. The check covers submap entry/exit, startup discovery, focus
+cancellation and unmap waiting. Missing or invalid identities are rejected.
+The change adds no runtime dependency or configuration migration. Regression
+tests cover foreign/missing identities and expired keybind lifecycle paths.
+
+The release retains 0.5.2's settings-save and window-switching fixes, including
+Discard/Cancel when unsaved changes prevent closing preferences.
 Selected windows are raised after focus; the compositor waits for the picker to
 unmap and cancels a pending selection if the picker reopens. Expired shortcut
 handles are guarded. Workspace scope now includes the focused scratchpad or

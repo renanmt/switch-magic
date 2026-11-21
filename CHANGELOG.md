@@ -1,10 +1,13 @@
 # Changelog
 
-## Unreleased
+## 0.5.3 — 2026-11-21
 
 - Require the Quickshell process ID as well as the layer namespace before changing picker submaps, waiting for unmapping, or cancelling pending focus. Other layer-shell clients using the same namespace are ignored.
 - Add regression coverage for foreign and missing client identities, startup layer discovery, and shortcut renewal after a process change.
 - Expand expired-keybind regression coverage to simulate foreign unbinds across desktop and picker submaps, shortcut reattachment, watchdog expiry, detach, and picker-only handle expiry. The runtime guard was already included in 0.5.2.
+
+Includes [PR #4](https://github.com/renanmt/switch-magic/pull/4) from @arthurpolice
+and the marketplace review fix in [PR #5](https://github.com/renanmt/switch-magic/pull/5).
 
 ## 0.5.2 — 2026-11-17
 
