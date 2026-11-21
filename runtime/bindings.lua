@@ -28,18 +28,20 @@ if prior then prior:stop(false) end
 local pickerSubmap = "switch-magic-picker"
 local state = { navigationBinds = {}, actions = {}, owner = owner, signature = signature, remaining = 8, binds = {}, active = true }
 _G[slot] = state
--- Hyprland 0.56 invalidates handles when another binding owner unbinds a
--- chord. Calling methods on expired handles can crash the compositor.
+-- Any client's hl.unbind() of a chord expires our handle for it, and
+-- Hyprland 0.56 dereferences an expired handle in every method except
+-- tostring(), crashing the compositor. Check before every method call.
+-- Drop alive() once the minimum supported Hyprland is 0.57, which checks
+-- expiry itself.
 local function alive(bind)
-    return bind ~= nil and tostring(bind) ~= 'HL.Keybind(expired)'
+    return tostring(bind) ~= 'HL.Keybind(expired)'
 end
 function state:valid()
     if not self.active or #self.binds ~= #assignments then return false end
-    for _, bind in ipairs(self.binds) do
-        if not alive(bind) or bind:is_enabled() ~= true then return false end
-    end
-    for _, bind in ipairs(self.navigationBinds) do
-        if not alive(bind) or bind:is_enabled() ~= true then return false end
+    for _, list in ipairs({self.binds, self.navigationBinds}) do
+        for _, bind in ipairs(list) do
+            if not alive(bind) or bind:is_enabled() ~= true then return false end
+        end
     end
     return true
 end
@@ -51,8 +53,11 @@ function state:stop(restore)
     if self.layerOpened then self.layerOpened:remove() end
     if self.layerClosed then self.layerClosed:remove() end
     self:leavePicker()
-    for _, bind in ipairs(self.navigationBinds) do if alive(bind) then bind:set_enabled(false) end end
-    for _, bind in ipairs(self.binds) do if alive(bind) then bind:set_enabled(false) end end
+    for _, list in ipairs({self.navigationBinds, self.binds}) do
+        for _, bind in ipairs(list) do
+            if alive(bind) then bind:set_enabled(false) end
+        end
+    end
     if _G[slot] == self then _G[slot] = nil end
     if restore then hl.exec_cmd('hyprctl reload config-only') end
 end

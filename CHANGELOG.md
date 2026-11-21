@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Expand expired-keybind regression coverage to simulate foreign unbinds across desktop and picker submaps, shortcut reattachment, watchdog expiry, detach, and picker-only handle expiry. The runtime guard was already included in 0.5.2.
+
 ## 0.5.2 — 2026-11-17
 
 - Restore native JavaScript arrays at the QML save boundary so valid settings no longer fail with “Invalid settings structure”.
